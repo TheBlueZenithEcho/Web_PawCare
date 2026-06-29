@@ -75,7 +75,7 @@ export default function SitterPage() {
 
   const handleExtendStay = async (data) => {
     // Giả lập update
-    console.log("Extend stay data:", data);
+
     toast.success('Gia hạn lưu trú thành công!');
     setModalType(null);
     await loadData();
@@ -83,13 +83,13 @@ export default function SitterPage() {
 
   const handleAddService = async (services) => {
     // Giả lập update
-    console.log("Add services:", services);
+
     toast.success('Đã thêm dịch vụ Grooming vào hóa đơn!');
     setModalType(null);
   };
 
   const handleEmergencyReport = async (formData) => {
-    console.log("Emergency Report:", formData);
+
     toast.success('Đã gửi báo cáo sự cố thành công! Hệ thống đã gửi cảnh báo cho Admin.');
     setModalType(null);
   };
