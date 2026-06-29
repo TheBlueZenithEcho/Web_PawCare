@@ -209,3 +209,28 @@ export const PETS = [
     }
   }
 ];
+
+export const STAFF_USERS = [
+  {
+    staff_id: "STAFF-001",
+    full_name: "Yến Ngân",
+    email: "yenngan.admin@pawcare.com",
+    phone: "0901234567",
+    role: "Admin Master",
+    shift: "Toàn thời gian",
+    status: "Đang hoạt động",
+    avatar_url: null, // Sử dụng chữ cái đầu tiên
+    created_at: "2025-01-01"
+  },
+  {
+    staff_id: "STAFF-002",
+    full_name: "Nguyễn Văn A",
+    email: "nva@pawcare.com",
+    phone: "0987654321",
+    role: "Pet Sitter",
+    shift: "Ca Sáng (08:00 - 16:00)",
+    status: "Đang hoạt động",
+    avatar_url: null,
+    created_at: "2025-05-10"
+  }
+];
