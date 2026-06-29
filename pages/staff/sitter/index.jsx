@@ -154,12 +154,12 @@ export default function SitterPage() {
                 onClick={() => setActiveTab('PROCESSING')}
                 className={`px-4 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${
                   activeTab === 'PROCESSING' 
-                    ? 'border-[#5e9e30] text-[#5e9e30] bg-white border shadow-sm' 
+                    ? 'border-moss-green text-moss-green bg-white border shadow-sm' 
                     : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-100'
                 }`}
               >
                 Đang lưu trú
-                <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === 'PROCESSING' ? 'bg-[#5e9e30] text-white' : 'bg-gray-200 text-gray-600'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === 'PROCESSING' ? 'bg-moss-green text-white' : 'bg-gray-200 text-gray-600'}`}>
                   {statsData.active}
                 </span>
               </button>
@@ -167,12 +167,12 @@ export default function SitterPage() {
                 onClick={() => setActiveTab('CHECKOUT')}
                 className={`px-4 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${
                   activeTab === 'CHECKOUT' 
-                    ? 'border-[#5e9e30] text-[#5e9e30] bg-white border shadow-sm' 
+                    ? 'border-moss-green text-moss-green bg-white border shadow-sm' 
                     : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-100'
                 }`}
               >
                 Chờ Check-out
-                <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === 'CHECKOUT' ? 'bg-[#5e9e30] text-white' : 'bg-gray-200 text-gray-600'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === 'CHECKOUT' ? 'bg-moss-green text-white' : 'bg-gray-200 text-gray-600'}`}>
                   {statsData.checkout}
                 </span>
               </button>
@@ -184,7 +184,7 @@ export default function SitterPage() {
                 placeholder="Tìm SĐT, Mã, Tên pet..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1a66cc] outline-none text-sm w-full md:w-64"
+                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-azeitona outline-none text-sm w-full md:w-64"
               />
               <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
             </div>
@@ -232,7 +232,7 @@ export default function SitterPage() {
                         <p className="text-lacustral mb-1">Check-in</p>
                         <p className="font-semibold text-understory">{booking.checkin_date || 'N/A'}</p>
                         <p className="text-lacustral mt-2 mb-1">Check-out</p>
-                        <p className="font-semibold text-[#1a66cc] text-lg">{booking.checkout_date || 'N/A'}</p>
+                        <p className="font-semibold text-fig-leaf text-lg">{booking.checkout_date || 'N/A'}</p>
                       </div>
                     </div>
 
@@ -288,7 +288,7 @@ export default function SitterPage() {
                         )}
                         <button 
                           onClick={() => { setSelectedBooking(booking); setModalType('DIARY'); }}
-                          className="px-6 py-2 bg-[#1a66cc] hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors shadow-sm text-sm"
+                          className="px-6 py-2 bg-moss-green hover:bg-fig-leaf text-white rounded-lg font-semibold flex items-center gap-2 transition-colors shadow-sm text-sm"
                         >
                           📝 Ghi nhật ký
                         </button>

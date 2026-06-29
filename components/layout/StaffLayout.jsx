@@ -20,7 +20,7 @@ export default function StaffLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-100 font-sans flex justify-center">
       {/* Container 1440px */}
-      <div className="w-full max-w-[1440px] h-screen bg-crown flex relative shadow-xl overflow-hidden">
+      <div className="w-full max-w-[1440px] h-screen bg-fresh-grown flex relative shadow-xl overflow-hidden">
         
         {/* Mobile Overlay */}
         {isSidebarOpen && (
@@ -60,14 +60,14 @@ export default function StaffLayout({ children }) {
                     onClick={() => setIsSidebarOpen(false)}
                     className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors ${
                       isActive 
-                        ? 'bg-chloro text-white shadow-md shadow-chloro/20' 
-                        : 'text-gray-600 hover:bg-xantho/30 hover:text-understory'
+                        ? 'bg-fig-leaf text-white shadow-md shadow-fig-leaf/20' 
+                        : 'text-gray-600 hover:bg-fresh-grown hover:text-wood-bark'
                     }`}
                   >
                     <item.icon size={20} className={`mt-0.5 shrink-0 ${isActive ? 'text-white' : 'text-lacustral'}`} />
                     <div>
-                      <p className={`font-semibold text-sm leading-tight ${isActive ? 'text-white' : 'text-understory'}`}>{item.name}</p>
-                      <p className={`text-[11px] mt-0.5 leading-tight ${isActive ? 'text-xantho' : 'text-gray-500'}`}>{item.sub}</p>
+                      <p className={`font-semibold text-sm leading-tight ${isActive ? 'text-white' : 'text-wood-bark'}`}>{item.name}</p>
+                      <p className={`text-[11px] mt-0.5 leading-tight ${isActive ? 'text-fresh-grown' : 'text-gray-500'}`}>{item.sub}</p>
                     </div>
                   </Link>
                 );
@@ -96,7 +96,7 @@ export default function StaffLayout({ children }) {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-crown relative">
+        <div className="flex-1 flex flex-col overflow-hidden bg-fresh-grown relative">
           {/* Mobile Header (Only visible on md-) */}
           <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
             <div className="flex items-center gap-2">
