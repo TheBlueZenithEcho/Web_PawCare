@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import StaffLayout from '@/components/layout/StaffLayout';
 import { fetchOrders, packOrder, shipOrder, returnStock, mockWebhookUpdate, formatVND } from '@/data/ordersApi';
-import { PackageSearch, PackageOpen, Truck, RotateCcw, XCircle, AlertTriangle, RefreshCw, Box, Clock, MapPin } from 'lucide-react';
+import { PackageSearch, PackageOpen, Truck, RotateCcw, XCircle, AlertTriangle, RefreshCw, Box, Clock, MapPin, Search } from 'lucide-react';
 
 export default function InventoryPortal() {
   const [allOrders, setAllOrders] = useState([]);
@@ -156,73 +156,17 @@ export default function InventoryPortal() {
             Kho & Giao hàng
           </h1>
           
-          <div className="relative w-full max-w-md mb-4">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <div className="relative w-full max-w-md mb-6">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
             <input 
               type="text" 
               placeholder="Tìm theo Mã đơn, Họ tên, SĐT..." 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-chloro focus:ring-1 focus:ring-chloro"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-700 placeholder-gray-400 outline-none focus:border-chloro focus:ring-1 focus:ring-chloro transition-all"
             />
-          </div>
-
-          {/* Dashboard Cards */}
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 mb-4">
-            {TABS.map(tab => {
-              const count = getStatusCount(tab.id);
-              const isActive = activeTab === tab.id;
-              
-              // Map styles for cards
-              let colorTheme = {
-                bg: 'bg-gray-50', activeBg: 'bg-white',
-                border: 'border-gray-200', activeBorder: 'border-gray-400',
-                text: 'text-gray-600', activeText: 'text-gray-900',
-                countText: 'text-gray-600', activeCountText: 'text-gray-900'
-              };
-
-              if (tab.id === 'CONFIRMED') {
-                colorTheme = {
-                  bg: 'bg-blue-50/30', activeBg: 'bg-white',
-                  border: 'border-blue-100', activeBorder: 'border-blue-400',
-                  text: 'text-gray-600', activeText: 'text-gray-700',
-                  countText: 'text-blue-600', activeCountText: 'text-blue-600'
-                };
-              } else if (tab.id === 'PREPARING') {
-                colorTheme = {
-                  bg: 'bg-purple-50/30', activeBg: 'bg-white',
-                  border: 'border-purple-100', activeBorder: 'border-purple-400',
-                  text: 'text-gray-600', activeText: 'text-gray-700',
-                  countText: 'text-purple-600', activeCountText: 'text-purple-600'
-                };
-              } else if (tab.id === 'FAILED_DELIVERY') {
-                colorTheme = {
-                  bg: 'bg-red-50/30', activeBg: 'bg-white',
-                  border: 'border-red-100', activeBorder: 'border-red-400',
-                  text: 'text-gray-600', activeText: 'text-gray-700',
-                  countText: 'text-red-500', activeCountText: 'text-red-500'
-                };
-              }
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 w-44 p-4 text-left rounded-xl border-2 transition-all shadow-sm ${
-                    isActive 
-                      ? `${colorTheme.activeBg} ${colorTheme.activeBorder}` 
-                      : `${colorTheme.bg} ${colorTheme.border} opacity-80 hover:opacity-100`
-                  }`}
-                >
-                  <div className={`text-2xl font-black mb-1 ${isActive ? colorTheme.activeCountText : colorTheme.countText}`}>
-                    {count}
-                  </div>
-                  <div className={`text-sm font-semibold ${isActive ? colorTheme.activeText : colorTheme.text}`}>
-                    {tab.label}
-                  </div>
-                </button>
-              );
-            })}
           </div>
 
           {/* Text Tabs */}
