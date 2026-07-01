@@ -261,7 +261,7 @@ export default function ShopPOS() {
                         onClick={() => addToCart(product)}
                         className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-chloro/50 transition-all cursor-pointer group flex flex-col overflow-hidden"
                       >
-                        <div className="relative aspect-square bg-gray-50 p-4 flex items-center justify-center">
+                        <div className="relative aspect-square w-full bg-gray-50 p-4 overflow-hidden">
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300" />
                           {product.stock <= 5 && (
                             <div className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-lg">
