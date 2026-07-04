@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { X, Phone, HeartPulse, Activity, AlertTriangle, ShieldAlert, FileText, ClipboardCheck, Home, User, Stethoscope } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { X, Phone, HeartPulse, Activity, AlertTriangle, ShieldAlert, FileText, ClipboardCheck, Home, User, Stethoscope, Camera } from 'lucide-react';
 import { formatVND } from '@/data/api';
 
 export default function PetProfileModal({ pet, owner, bookings, onClose }) {
+  const fileInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState('HEALTH'); // 'HEALTH' | 'HISTORY'
   const [localPet, setLocalPet] = useState(pet);
   const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +15,18 @@ export default function PetProfileModal({ pet, owner, bookings, onClose }) {
   const handleAction = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setLocalPet(prev => ({ ...prev, avatar: url }));
+      if (isEditing) {
+        setPetForm(prev => ({ ...prev, avatar: url }));
+      }
+      handleAction('Đã cập nhật ảnh thú cưng!');
+    }
   };
 
   const getStatusText = (status, type) => {
@@ -45,8 +58,19 @@ export default function PetProfileModal({ pet, owner, bookings, onClose }) {
           )}
           
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-inner border-2 border-white/30 backdrop-blur-md shrink-0">
-              {localPet.species === 'Mèo' ? '🐈' : '🐕'}
+            <div 
+              className="relative w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-inner border-2 border-white/30 backdrop-blur-md shrink-0 cursor-pointer overflow-hidden group"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {localPet.avatar ? (
+                <img src={localPet.avatar} alt="Pet Avatar" className="w-full h-full object-cover" />
+              ) : (
+                localPet.species === 'Mèo' ? '🐈' : '🐕'
+              )}
+              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera size={24} />
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">

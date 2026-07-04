@@ -5,8 +5,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Tạm thời chuyển hướng trang chủ (/) sang trang Lễ tân (/staff)
-    router.push('/staff');
+    // Tạm thời chuyển hướng trang chủ (/) sang trang Tiếp nhận (/staff/booking)
+    router.push('/staff/booking');
   }, [router]);
 
   return (

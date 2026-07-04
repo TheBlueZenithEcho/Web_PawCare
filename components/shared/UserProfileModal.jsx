@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Save, User, Mail, Phone, Clock, Briefcase, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function UserProfileModal({ user, onClose, onSave }) {
+  const fileInputRef = useRef(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || null);
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     email: user?.email || '',
@@ -10,6 +12,15 @@ export default function UserProfileModal({ user, onClose, onSave }) {
     role: user?.role || '',
     shift: user?.shift || '',
   });
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarPreview(url);
+      setFormData(prev => ({ ...prev, avatar_url: url }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,16 +62,17 @@ export default function UserProfileModal({ user, onClose, onSave }) {
           {/* Avatar Section */}
           <div className="flex flex-col items-center mb-8">
             <div className="relative">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md" />
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md" />
               ) : (
                 <div className="w-24 h-24 rounded-full bg-azeitona text-white flex items-center justify-center text-3xl font-bold shadow-md border-4 border-white">
                   {initials}
                 </div>
               )}
-              <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-lacustral hover:text-moss-green hover:bg-gray-50 border border-gray-100 transition-colors">
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-lacustral hover:text-moss-green hover:bg-gray-50 border border-gray-100 transition-colors cursor-pointer">
                 <Camera size={16} />
               </button>
+              <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
             </div>
             <h3 className="mt-4 font-bold text-xl text-wood-bark">{user.full_name}</h3>
             <span className="px-3 py-1 bg-moss-green/10 text-moss-green text-xs font-semibold rounded-full mt-1 border border-moss-green/20">

@@ -3,14 +3,18 @@ import Link from 'next/link';
 import { Users, ClipboardCheck, ShoppingCart, PackageSearch, AlertTriangle, Home, LogOut, Scissors } from 'lucide-react';
 import { useRouter } from 'next/router';
 import GlobalHeader from '../shared/GlobalHeader';
+import { STAFF_USERS } from '../../data/users';
 
 export default function StaffLayout({ children }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const currentUser = STAFF_USERS[0];
+  const initials = currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'NV';
+
   const navItems = [
     { name: 'Tài khoản & Hồ sơ', sub: 'Pet Profile, Quản lý KH', icon: Users, href: '/staff/users' },
-    { name: 'Tiếp nhận & Đặt lịch', sub: 'Trạm điều phối, Đặt lịch', icon: ClipboardCheck, href: '/staff' },
+    { name: 'Tiếp nhận & Đặt lịch', sub: 'Trạm điều phối, Đặt lịch', icon: ClipboardCheck, href: '/staff/booking' },
     { name: 'Lưu trú', sub: 'Nhật ký, Cho ăn, Vui chơi', icon: Home, href: '/staff/sitter' },
     { name: 'Grooming/Spa', sub: 'Thực hiện Grooming/Spa', icon: Scissors, href: '/staff/groomer' },
     { name: 'Cửa hàng', sub: 'Bán lẻ, Đơn vị vận chuyển', icon: ShoppingCart, href: '/staff/shop' },
@@ -19,9 +23,9 @@ export default function StaffLayout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans flex justify-center">
-      {/* Container 1440px */}
-      <div className="w-full max-w-[1440px] h-screen bg-fresh-grown flex flex-col relative shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-gray-100 font-sans flex flex-col">
+      {/* Full width container */}
+      <div className="w-full h-screen bg-fresh-grown flex flex-col relative overflow-hidden">
         
         {/* Global Header */}
         <GlobalHeader onMenuClick={() => setIsSidebarOpen(true)} />
@@ -41,7 +45,7 @@ export default function StaffLayout({ children }) {
               <p className="text-xs font-semibold text-gray-400 mb-4 tracking-wider uppercase">Chức năng hệ thống</p>
               <nav className="flex flex-col gap-2">
                 {navItems.map((item) => {
-                  const isActive = router.pathname === item.href || (item.href === '/staff' && router.pathname.startsWith('/staff/reception'));
+                  const isActive = router.pathname === item.href || (item.href === '/staff/booking' && router.pathname.startsWith('/staff/reception'));
                   return (
                     <Link
                       key={item.name}
@@ -65,7 +69,19 @@ export default function StaffLayout({ children }) {
             </div>
 
             <div className="mt-auto p-4 border-t border-gray-100 flex items-center justify-between bg-white shrink-0">
-              <span className="text-sm font-medium text-gray-500">Thoát phiên làm việc</span>
+              <div className="flex items-center gap-3">
+                {currentUser?.avatar_url ? (
+                  <img src={currentUser.avatar_url} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-azeitona text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                    {initials}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-gray-700">{currentUser?.full_name || 'Nhân viên'}</span>
+                  <span className="text-xs font-medium text-gray-500">{currentUser?.role || 'Staff'}</span>
+                </div>
+              </div>
               <button 
                 onClick={() => router.push('/staff/login')}
                 title="Đăng xuất"

@@ -206,35 +206,35 @@ export default function ShopPOS() {
               <div className="bg-white p-4 md:p-6 border-b border-gray-200 z-10 shrink-0 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-4 justify-between">
                   <div className="relative w-full md:max-w-md">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input 
                       type="text" 
                       placeholder="Tìm sản phẩm, mã vạch..." 
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl outline-none focus:border-chloro focus:ring-1 focus:ring-chloro transition-all bg-gray-50/50"
+                      className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-chloro focus:ring-1 focus:ring-chloro transition-all bg-gray-50/50"
                     />
                   </div>
                   <div className="flex gap-2 md:gap-3 overflow-x-auto no-scrollbar pb-2 md:pb-0 items-center">
                     <select 
                       value={categoryFilter}
                       onChange={e => setCategoryFilter(e.target.value)}
-                      className="border border-gray-200 text-gray-700 px-3 py-2.5 rounded-xl font-bold outline-none focus:border-chloro bg-white hover:bg-gray-50 shrink-0"
+                      className="border border-gray-200 text-gray-700 px-3 py-2 text-sm rounded-lg font-bold outline-none focus:border-chloro bg-white hover:bg-gray-50 shrink-0"
                     >
                       {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select 
                       value={petTypeFilter}
                       onChange={e => setPetTypeFilter(e.target.value)}
-                      className="border border-gray-200 text-gray-700 px-3 py-2.5 rounded-xl font-bold outline-none focus:border-chloro bg-white hover:bg-gray-50 shrink-0"
+                      className="border border-gray-200 text-gray-700 px-3 py-2 text-sm rounded-lg font-bold outline-none focus:border-chloro bg-white hover:bg-gray-50 shrink-0"
                     >
                       {PET_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <button 
                       onClick={() => setIsCartOpen(!isCartOpen)}
-                      className={`px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shrink-0 transition-colors ${isCartOpen ? 'bg-understory text-white' : 'bg-chloro text-white hover:bg-green-700'}`}
+                      className={`px-4 py-2 text-sm rounded-lg font-bold flex items-center gap-2 shrink-0 transition-colors ${isCartOpen ? 'bg-understory text-white' : 'bg-[#5e9e30] text-white hover:bg-[#4d8227]'}`}
                     >
-                      <ShoppingCart size={20} />
+                      <ShoppingCart size={16} />
                       <span className="hidden sm:inline">Giỏ hàng</span>
                       {cart.length > 0 && (
                         <span className="bg-white text-chloro text-xs px-2 py-0.5 rounded-full">{cart.reduce((a,c)=>a+c.quantity, 0)}</span>

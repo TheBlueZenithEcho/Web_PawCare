@@ -159,77 +159,7 @@ export default function OrdersList() {
             className="w-full pl-12 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-chloro focus:ring-1 focus:ring-chloro"
           />
         </div>
-        {/* Dashboard Cards */}
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 mb-4">
-          {TABS.filter(t => ['PENDING_PAYMENT', 'PAID', 'PENDING_VERIFICATION', 'CONFIRMED', 'CANCELLED'].includes(t.id)).map(tab => {
-            const count = getStatusCount(tab.id);
-            const isActive = activeTab === tab.id;
-            
-            // Map styles for cards
-            let colorTheme = {
-              bg: 'bg-gray-50', activeBg: 'bg-white',
-              border: 'border-gray-200', activeBorder: 'border-gray-400',
-              text: 'text-gray-600', activeText: 'text-gray-900',
-              countText: 'text-gray-600', activeCountText: 'text-gray-900'
-            };
 
-            if (tab.id === 'PENDING_PAYMENT') {
-              colorTheme = {
-                bg: 'bg-yellow-50/50', activeBg: 'bg-white',
-                border: 'border-yellow-200', activeBorder: 'border-yellow-400',
-                text: 'text-gray-600', activeText: 'text-gray-700',
-                countText: 'text-yellow-600', activeCountText: 'text-yellow-600'
-              };
-            } else if (tab.id === 'PAID') {
-              colorTheme = {
-                bg: 'bg-emerald-50/50', activeBg: 'bg-white',
-                border: 'border-emerald-200', activeBorder: 'border-emerald-400',
-                text: 'text-gray-600', activeText: 'text-gray-700',
-                countText: 'text-emerald-600', activeCountText: 'text-emerald-600'
-              };
-            } else if (tab.id === 'PENDING_VERIFICATION') {
-              colorTheme = {
-                bg: 'bg-orange-50/50', activeBg: 'bg-white',
-                border: 'border-orange-200', activeBorder: 'border-orange-400',
-                text: 'text-gray-600', activeText: 'text-gray-700',
-                countText: 'text-orange-500', activeCountText: 'text-orange-500'
-              };
-            } else if (tab.id === 'CONFIRMED') {
-              colorTheme = {
-                bg: 'bg-blue-50/30', activeBg: 'bg-white',
-                border: 'border-blue-200', activeBorder: 'border-blue-400',
-                text: 'text-gray-600', activeText: 'text-gray-700',
-                countText: 'text-blue-600', activeCountText: 'text-blue-600'
-              };
-            } else if (tab.id === 'CANCELLED') {
-              colorTheme = {
-                bg: 'bg-red-50/30', activeBg: 'bg-white',
-                border: 'border-red-200', activeBorder: 'border-red-400',
-                text: 'text-gray-600', activeText: 'text-gray-700',
-                countText: 'text-red-500', activeCountText: 'text-red-500'
-              };
-            }
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 w-44 p-4 text-left rounded-xl border-2 transition-all shadow-sm flex flex-col ${
-                  isActive 
-                    ? `${colorTheme.activeBg} ${colorTheme.activeBorder}` 
-                    : `${colorTheme.bg} ${colorTheme.border} opacity-80 hover:opacity-100`
-                }`}
-              >
-                <div className={`text-2xl font-black mb-1 ${isActive ? colorTheme.activeCountText : colorTheme.countText}`}>
-                  {count}
-                </div>
-                <div className={`text-sm font-semibold uppercase ${isActive ? colorTheme.activeText : colorTheme.text}`}>
-                  {tab.label}
-                </div>
-              </button>
-            );
-          })}
-        </div>
 
         {/* Text Tabs */}
         <div className="flex gap-4 overflow-x-auto no-scrollbar">

@@ -156,40 +156,40 @@ export default function InventoryPortal() {
             Kho & Giao hàng
           </h1>
           
-          <div className="relative w-full max-w-md mb-6">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+          <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
+            {/* Text Tabs */}
+            <div className="flex gap-4 overflow-x-auto no-scrollbar">
+              {TABS.map(tab => {
+                const count = getStatusCount(tab.id);
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`py-2 px-2 font-bold text-sm whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5 ${
+                      activeTab === tab.id ? 'border-chloro text-chloro' : 'border-transparent text-gray-400 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                      activeTab === tab.id ? 'bg-chloro text-white' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <input 
-              type="text" 
-              placeholder="Tìm theo Mã đơn, Họ tên, SĐT..." 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-700 placeholder-gray-400 outline-none focus:border-chloro focus:ring-1 focus:ring-chloro transition-all"
-            />
-          </div>
 
-          {/* Text Tabs */}
-          <div className="flex gap-4 overflow-x-auto no-scrollbar">
-            {TABS.map(tab => {
-              const count = getStatusCount(tab.id);
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`pb-3 px-2 font-bold text-sm whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5 ${
-                    activeTab === tab.id ? 'border-chloro text-chloro' : 'border-transparent text-gray-400 hover:text-gray-700'
-                  }`}
-                >
-                  {tab.label}
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                    activeTab === tab.id ? 'bg-chloro text-white' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+            <div className="relative w-full md:max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Tìm theo Mã đơn, Họ tên, SĐT..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 outline-none focus:border-chloro focus:ring-1 focus:ring-chloro transition-all"
+              />
+            </div>
           </div>
         </div>
 

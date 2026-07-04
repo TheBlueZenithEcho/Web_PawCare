@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Phone, Mail, Dog, Calendar, ClipboardCheck, AlertTriangle, ShieldCheck, Tag, Home, Stethoscope, Camera } from 'lucide-react';
 import { formatVND } from '@/data/api';
 
 export default function UserProfileModal({ customer, pets, bookings, onClose, onOpenCreateAccount }) {
+  const fileInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState('PETS'); // 'PETS' | 'BOOKINGS'
   const [toastMessage, setToastMessage] = useState('');
   
@@ -34,6 +35,18 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setLocalCustomer(prev => ({ ...prev, avatar: url }));
+      if (isEditingCustomer) {
+        setCustomerForm(prev => ({ ...prev, avatar: url }));
+      }
+      handleAction('Đã cập nhật ảnh đại diện!');
+    }
+  };
+
   if (!customer) return null;
 
   return (
@@ -46,16 +59,19 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
             <X size={20} />
           </button>
           <div className="flex gap-6 items-center">
-            <div className="relative w-24 h-24 rounded-full bg-[#dcfce7] shadow-lg border-4 border-white/20 shrink-0 group overflow-hidden cursor-pointer">
-              <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-understory">
-                {customer.first_name.charAt(0)}
-              </div>
-              {isEditingCustomer && (
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera size={24} />
-                  <span className="text-[10px] font-bold mt-1">Thay đổi</span>
+            <div className="relative w-24 h-24 rounded-full bg-[#dcfce7] shadow-lg border-4 border-white/20 shrink-0 group overflow-hidden cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              {localCustomer.avatar ? (
+                <img src={localCustomer.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-understory">
+                  {localCustomer.first_name.charAt(0)}
                 </div>
               )}
+              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera size={24} />
+                <span className="text-[10px] font-bold mt-1">Thay đổi</span>
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
@@ -171,8 +187,8 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                     <div key={pet.pet_id} className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm hover:border-chloro/50 transition-colors">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex gap-4 items-center">
-                          <div className="w-16 h-16 bg-xantho/30 rounded-full flex items-center justify-center text-3xl border-2 border-white shadow-sm shrink-0">
-                            {pet.species === 'Mèo' ? '🐈' : '🐕'}
+                          <div className="w-16 h-16 bg-xantho/30 rounded-full flex items-center justify-center text-3xl border-2 border-white shadow-sm shrink-0 overflow-hidden">
+                            {pet.avatar ? <img src={pet.avatar} alt="Pet Avatar" className="w-full h-full object-cover" /> : (pet.species === 'Mèo' ? '🐈' : '🐕')}
                           </div>
                           <div>
                             {editingPetId === pet.pet_id ? (
