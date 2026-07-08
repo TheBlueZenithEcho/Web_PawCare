@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Plus } from 'lucide-react';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 
 export default function AddServiceModal({ booking, onClose, onConfirm }) {
   const [selectedServices, setSelectedServices] = useState({});

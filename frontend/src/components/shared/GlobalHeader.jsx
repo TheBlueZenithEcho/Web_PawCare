@@ -1,11 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Bell, Settings, User, Menu } from 'lucide-react';
 import UserProfileModal from './UserProfileModal';
-import { STAFF_USERS } from '@/services/mock/mockUsers';
+import { getStaffById } from '@/services/supabase/supabaseUsersApi';
 
 export default function GlobalHeader({ onMenuClick }) {
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(STAFF_USERS[0]); // Lấy mock user đầu tiên làm ví dụ
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    // Giả lập đăng nhập với nhân viên STF00002
+    const fetchStaff = async () => {
+      const staff = await getStaffById('STF00002');
+      if (staff) {
+        setCurrentUser({
+          staff_id: staff.staff_id,
+          full_name: `${staff.last_name} ${staff.first_name}`,
+          email: staff.email,
+          phone: staff.phone,
+          role: staff.role === 'receptionist' ? 'Lễ tân' : 
+                staff.role === 'admin' ? 'Admin Master' :
+                staff.role === 'groomer' ? 'Groomer' :
+                staff.role === 'pet_sitter' ? 'Pet Sitter' :
+                staff.role === 'sales_staff' ? 'Nhân viên Sales' :
+                staff.role === 'warehouse_staff' ? 'Nhân viên Kho' : staff.role,
+          shift: 'Toàn thời gian', // Mặc định
+        });
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const handleSaveProfile = (updatedData) => {
     setCurrentUser(prev => ({ ...prev, ...updatedData }));

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Receipt } from 'lucide-react';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 import { toast } from 'sonner';
 
 export default function PaymentModal({ booking, onClose, onConfirm }) {
@@ -10,8 +10,11 @@ export default function PaymentModal({ booking, onClose, onConfirm }) {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('Tiền mặt');
 
-  const baseAmount = booking.total_amount || 0;
+  const baseAmount = booking.total_bill || 0;
   const totalAmount = baseAmount + Number(lateFee) + Number(extraFee) - Number(discountAmount);
+  
+  const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`;
+  const serviceName = booking.booking_service?.[0]?.service?.service_name || booking.booking_type || 'Grooming';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,24 +58,28 @@ export default function PaymentModal({ booking, onClose, onConfirm }) {
             {/* Summary */}
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-100">
-                  {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
-                </div>
+                {booking.pet?.pet_ava ? (
+                  <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+                ) : (
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm border border-gray-100">
+                    {booking.pet?.species === 'cat' ? '🐈' : '🐕'}
+                  </div>
+                )}
                 <div>
-                  <h3 className="font-bold text-understory">{booking.pet_name}</h3>
-                  <p className="text-xs text-gray-500">{booking.customer_name} · {booking.customer_phone}</p>
+                  <h3 className="font-bold text-understory">{booking.pet?.pet_name}</h3>
+                  <p className="text-xs text-gray-500">{customerName} · {booking.customer?.phone}</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-gray-500">Dịch vụ</p>
-                <p className="text-sm font-bold text-understory">{booking.service_name || booking.service_type || 'Grooming'}</p>
+                <p className="text-sm font-bold text-understory">{serviceName}</p>
               </div>
             </div>
 
             {/* Calculations */}
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-sm text-gray-600 font-medium">Tiền dịch vụ gốc ({booking.service_name || booking.service_type || 'Grooming'})</span>
+                <span className="text-sm text-gray-600 font-medium">Tiền dịch vụ gốc ({serviceName})</span>
                 <span className="font-bold text-understory">{formatVND(baseAmount)}</span>
               </div>
 

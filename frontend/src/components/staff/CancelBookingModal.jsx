@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, AlertTriangle, HelpCircle, ShieldAlert } from 'lucide-react';
-import { formatVND, reportIncident } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
+import { reportIncident } from '@/services/supabase/supabaseBookingApi';
 import { useRouter } from 'next/router';
 
 export default function CancelBookingModal({ booking, onClose, onConfirmCancel }) {

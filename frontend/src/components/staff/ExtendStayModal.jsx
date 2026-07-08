@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar as CalendarIcon, CheckCircle, AlertTriangle } from 'lucide-react';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 
 export default function ExtendStayModal({ booking, onClose, onConfirm }) {
   const [newCheckoutDate, setNewCheckoutDate] = useState('');

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import StaffLayout from '@/components/layout/StaffLayout';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 import { fetchProducts, fetchCategories, createOrder } from '@/services/supabase/supabaseShopApi';
 import { Search, ShoppingCart, Plus, Minus, Trash2, Tag, CreditCard, Banknote, MapPin, Package, CheckCircle2, Store, ShoppingBag } from 'lucide-react';
 import OrdersList from '@/components/staff/OrdersList';

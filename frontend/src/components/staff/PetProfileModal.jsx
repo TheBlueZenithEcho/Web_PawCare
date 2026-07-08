@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { X, Phone, HeartPulse, Activity, AlertTriangle, ShieldAlert, FileText, ClipboardCheck, Home, User, Stethoscope, Camera } from 'lucide-react';
-import { formatVND } from '@/services/mock/mockApi';
-import { updatePet } from '@/services/supabase/supabaseUsersApi';
+import { formatVND } from '@/utils/format';
+import { updatePet, uploadPetAvatar, deletePet } from '@/services/supabase/supabaseUsersApi';
 
-export default function PetProfileModal({ pet, owner, bookings, onClose, onSuccess }) {
+export default function PetProfileModal({ pet, owner, bookings, onClose, onSuccess, onViewBooking }) {
   const fileInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState('HEALTH'); // 'HEALTH' | 'HISTORY'
   const [localPet, setLocalPet] = useState(pet);
@@ -16,18 +16,6 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
   const handleAction = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setLocalPet(prev => ({ ...prev, avatar: url }));
-      if (isEditing) {
-        setPetForm(prev => ({ ...prev, avatar: url }));
-      }
-      handleAction('Đã cập nhật ảnh thú cưng!');
-    }
   };
 
   const getStatusText = (status, type) => {
@@ -48,7 +36,7 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
       <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
 
         {/* Header: Pet Basic Info */}
-        <div className="bg-gradient-to-r from-chloro to-green-700 text-white p-6 relative shrink-0">
+        <div className="bg-[#1b7337] text-white p-6 relative shrink-0">
           <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/30 bg-white/10 rounded-full transition-colors z-10 cursor-pointer">
             <X size={20} />
           </button>
@@ -60,18 +48,32 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
 
           <div className="flex items-center gap-6">
             <div
-              className="relative w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-inner border-2 border-white/30 backdrop-blur-md shrink-0 cursor-pointer overflow-hidden group"
-              onClick={() => fileInputRef.current?.click()}
+              className="relative w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-inner border-2 border-white/30 backdrop-blur-md shrink-0 overflow-hidden group"
             >
-              {localPet.avatar ? (
-                <img src={localPet.avatar} alt="Pet Avatar" className="w-full h-full object-cover" />
+              {(isEditing ? petForm.pet_ava : localPet.pet_ava) ? (
+                <img src={isEditing ? petForm.pet_ava : localPet.pet_ava} alt="Pet Avatar" className="w-full h-full object-cover" />
               ) : (
-                localPet.species === 'Mèo' ? '🐈' : '🐕'
+                localPet.species === 'cat' ? '🐈' : '🐕'
               )}
-              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={24} />
-              </div>
-              <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
+              {isEditing && (
+                <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+                  <Camera size={24} />
+                  <span className="text-[10px] mt-1 font-bold text-center leading-tight">Đổi ảnh</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    try {
+                      setToastMessage('Đang tải ảnh lên...');
+                      const url = await uploadPetAvatar(localPet.pet_id, file);
+                      setPetForm({ ...petForm, pet_ava: url });
+                      handleAction('Đã tải ảnh xong, hãy bấm Lưu lại!');
+                    } catch (err) {
+                      alert('Lỗi tải ảnh. Có thể bạn chưa tạo Storage Bucket "avatars" trên Supabase: ' + err.message);
+                      setToastMessage('');
+                    }
+                  }} />
+                </label>
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -82,21 +84,21 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                 )}
                 {isEditing ? (
                   <select className="px-2 py-1.5 text-sm text-black rounded border-none font-bold" value={petForm.species} onChange={e => setPetForm({ ...petForm, species: e.target.value })}>
-                    <option value="Chó">Chó</option>
-                    <option value="Mèo">Mèo</option>
+                    <option value="dog">Chó</option>
+                    <option value="cat">Mèo</option>
                   </select>
                 ) : (
                   <span className="px-2 py-0.5 rounded text-xs font-bold bg-white/20 text-white border border-white/30 uppercase tracking-wide">
-                    {localPet.species}
+                    {localPet.species === 'cat' ? 'Mèo' : 'Chó'}
                   </span>
                 )}
                 {isEditing ? (
                   <select className="px-2 py-1.5 text-sm text-black rounded border-none font-bold" value={petForm.gender} onChange={e => setPetForm({ ...petForm, gender: e.target.value })}>
-                    <option value="Đực">Đực</option><option value="Cái">Cái</option><option value="Chưa rõ">Chưa rõ</option>
+                    <option value="male">Đực</option><option value="female">Cái</option>
                   </select>
                 ) : (
                   <span className="px-2 py-0.5 rounded text-xs font-bold bg-white/20 text-white border border-white/30">
-                    {localPet.gender || 'Chưa rõ'}
+                    {localPet.gender === 'female' ? 'Cái' : 'Đực'}
                   </span>
                 )}
               </div>
@@ -104,13 +106,17 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                 {isEditing ? (
                   <>
                     <input className="px-2 py-1 text-black rounded text-sm w-32" value={petForm.breed} onChange={e => setPetForm({ ...petForm, breed: e.target.value })} placeholder="Giống" />
-                    <input className="px-2 py-1 text-black rounded text-sm w-20" value={petForm.size} onChange={e => setPetForm({ ...petForm, size: e.target.value })} placeholder="Size" />
+                    <select className="px-2 py-1 text-black rounded text-sm w-24" value={petForm.size} onChange={e => setPetForm({ ...petForm, size: e.target.value })}>
+                      <option value="S">Nhỏ (S)</option>
+                      <option value="M">Vừa (M)</option>
+                      <option value="L">Lớn (L)</option>
+                    </select>
                     <input className="px-2 py-1 text-black rounded text-sm w-20" type="number" step="0.1" value={petForm.weight} onChange={e => setPetForm({ ...petForm, weight: e.target.value })} placeholder="Kg" /> kg
                     <input className="px-2 py-1 text-black rounded text-sm w-32" type="date" value={petForm.dob} onChange={e => setPetForm({ ...petForm, dob: e.target.value })} />
                   </>
                 ) : (
                   <p className="text-lg">
-                    {localPet.breed} {localPet.size ? `· Size ${localPet.size}` : ''} {localPet.weight ? `· ${localPet.weight} kg` : ''} {localPet.dob ? `· Sinh: ${localPet.dob}` : ''}
+                    {localPet.breed} {localPet.size ? `· Size ${localPet.size}` : ''} {localPet.weight ? `· ${localPet.weight} kg` : ''} {localPet.dob ? `· Sinh: ${new Date(localPet.dob).toLocaleDateString('vi-VN')}` : ''}
                   </p>
                 )}
               </div>
@@ -138,20 +144,34 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                   }} className="text-xs font-semibold bg-[#82c696] text-white hover:bg-[#68a87b] px-4 py-2 rounded-lg transition-colors shadow-sm">💾 Lưu lại</button>
                 </div>
               ) : (
-                <button
-                  onClick={() => {
-                    setPetForm({
-                      ...localPet,
-                      health_record: localPet.health_record || {
-                        skin_condition: 'Bình thường', coat_condition: 'Bình thường', ear_condition: 'Bình thường', eye_condition: 'Bình thường', nail_condition: 'Bình thường', wound_description: 'Không có vết thương', recorded_at: new Date().toISOString().split('T')[0]
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setPetForm({
+                        ...localPet
+                      });
+                      setIsEditing(true);
+                    }}
+                    className="text-xs font-semibold bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-lg transition-colors border border-white/20 flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    ✏️ Chỉnh sửa hồ sơ
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm('Bạn có chắc chắn muốn xóa thú cưng này? Lịch sử sẽ bị mất.')) {
+                        try {
+                          await deletePet(localPet.pet_id);
+                          alert('Đã xóa hồ sơ thú cưng thành công!');
+                          if (onSuccess) onSuccess();
+                          onClose();
+                        } catch (e) { alert('Lỗi xóa thú cưng: ' + e.message); }
                       }
-                    });
-                    setIsEditing(true);
-                  }}
-                  className="text-xs font-semibold bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-lg transition-colors border border-white/20 flex items-center justify-center gap-1 shadow-sm"
-                >
-                  ✏️ Chỉnh sửa hồ sơ
-                </button>
+                    }}
+                    className="text-xs font-semibold bg-red-500/80 text-white hover:bg-red-500 px-4 py-2 rounded-lg transition-colors border border-red-500/50 flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    🗑 Xóa
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -244,50 +264,7 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                 </div>
               </div>
 
-              {/* Chi tiết Khám & Kiểm tra sức khỏe (PET_HEALTH_RECORD) */}
-              {(localPet.health_record || isEditing) ? (
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-                    <div className="flex items-center gap-2 text-lacustral">
-                      <Stethoscope size={20} className="text-chloro" />
-                      <h3 className="font-bold text-understory text-lg">Bệnh án / Kiểm tra sức khỏe</h3>
-                    </div>
-                    <span className="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-600">
-                      Cập nhật: {isEditing ? petForm.health_record?.recorded_at : localPet.health_record?.recorded_at}
-                    </span>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                    {[
-                      { key: 'skin_condition', label: 'Tình trạng Da' },
-                      { key: 'coat_condition', label: 'Tình trạng Lông' },
-                      { key: 'ear_condition', label: 'Tình trạng Tai' },
-                      { key: 'eye_condition', label: 'Tình trạng Mắt' },
-                      { key: 'nail_condition', label: 'Tình trạng Móng' },
-                      { key: 'wound_description', label: 'Vết thương' }
-                    ].map(field => (
-                      <div key={field.key}>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{field.label}</p>
-                        {isEditing ? (
-                          <input
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded font-medium text-understory"
-                            value={petForm.health_record?.[field.key] || ''}
-                            onChange={e => setPetForm({ ...petForm, health_record: { ...petForm.health_record, [field.key]: e.target.value } })}
-                          />
-                        ) : (
-                          <p className={`font-medium ${(localPet.health_record?.[field.key] || '').includes('Bình thường') || (localPet.health_record?.[field.key] || '').includes('Không') ? 'text-gray-700' : (field.key === 'wound_description' ? 'text-red-600 font-bold' : 'text-orange-600 font-bold')}`}>
-                            {localPet.health_record?.[field.key]}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 border border-gray-100 p-6 text-center rounded-xl">
-                  <p className="text-gray-500 font-medium">Chưa có bản ghi sức khỏe nào.</p>
-                </div>
-              )}
 
             </div>
           )}
@@ -302,16 +279,20 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                 </div>
               ) : (
                 bookings.map(bk => (
-                  <div key={bk.booking_id} className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                  <div 
+                    key={bk.booking_id} 
+                    className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex items-center justify-between hover:shadow-md hover:border-chloro transition-all cursor-pointer group"
+                    onClick={() => onViewBooking && onViewBooking(bk)}
+                  >
                     <div className="flex items-center gap-5">
                       <div className={`p-4 rounded-xl ${bk.service_type === 'Hotel' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
                         {bk.service_type === 'Hotel' ? <Home size={24} /> : <ClipboardCheck size={24} />}
                       </div>
                       <div>
-                        <h4 className="font-bold text-understory text-lg mb-1">{bk.service_name || bk.service_type}</h4>
+                        <h4 className="font-bold text-understory text-lg mb-1">{bk.booking_service?.[0]?.service?.service_name || bk.booking_type}</h4>
                         <div className="flex items-center gap-3 text-sm text-lacustral">
                           <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs">{bk.booking_id}</span>
-                          <span>{bk.checkin_date || bk.booking_time}</span>
+                          <span>{new Date(bk.created_at).toLocaleString('vi-VN')}</span>
                           {bk.assigned_staff_name && (
                             <>
                               <span>•</span>
@@ -328,7 +309,7 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                         }`}>
                         {getStatusText(bk.status, bk.service_type)}
                       </span>
-                      <p className="font-bold text-xantho text-lg mt-2">{formatVND(bk.total_amount)}</p>
+                      <p className="font-bold text-xantho text-lg mt-2">{formatVND(bk.total_bill || 0)}</p>
                     </div>
                   </div>
                 ))

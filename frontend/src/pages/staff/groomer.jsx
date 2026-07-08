@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import StaffLayout from '@/components/layout/StaffLayout';
 import GroomingModal from '@/components/staff/GroomingModal';
-import { fetchBookings, completeGrooming, reportIncident } from '@/services/mock/mockApi';
+import { fetchBookings, completeGrooming, reportIncident } from '@/services/supabase/supabaseBookingApi';
 import { Scissors, CheckCircle, Clock, Search, Filter, Calendar, CheckSquare } from 'lucide-react';
 
 export default function GroomerPage() {
@@ -19,11 +19,11 @@ export default function GroomerPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchBookings({});
+      const data = await fetchBookings();
       // Lấy các booking Grooming từ trạng thái Đang phục vụ (PROCESSING) trở đi
       const validStatuses = ['PROCESSING', 'COMPLETED_SERVICE', 'PAID', 'DONE'];
       const groomerData = data.filter(b => 
-        (b.service_category === 'Grooming' || !b.service_category || b.service_type === 'Grooming') && 
+        b.booking_type === 'Grooming' && 
         validStatuses.includes(b.status)
       );
       setGroomingBookings(groomerData);
@@ -72,16 +72,21 @@ export default function GroomerPage() {
     // 2. Tìm kiếm (Mã đơn, Tên pet, Tên khách, SĐT)
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
+      const petName = b.pet?.pet_name?.toLowerCase() || '';
+      const customerName = `${b.customer?.last_name || ''} ${b.customer?.first_name || ''}`.toLowerCase();
+      const customerPhone = b.customer?.phone || '';
+      
       const matchId = b.booking_id?.toLowerCase().includes(q);
-      const matchPet = b.pet_name?.toLowerCase().includes(q);
-      const matchCustomer = b.customer_name?.toLowerCase().includes(q);
-      const matchPhone = b.customer_phone?.includes(q);
+      const matchPet = petName.includes(q);
+      const matchCustomer = customerName.includes(q);
+      const matchPhone = customerPhone.includes(q);
       if (!matchId && !matchPet && !matchCustomer && !matchPhone) return false;
     }
 
     // 3. Lọc ngày
     if (dateFilter !== 'all') {
-      const dateStr = b.checkin_date || (b.booking_time ? b.booking_time.split(' ')[0] : '');
+      const slotStart = b.booking_service?.[0]?.slot_start;
+      const dateStr = slotStart ? slotStart.split('T')[0] : (b.created_at ? b.created_at.split('T')[0] : '');
       if (dateFilter === 'specific' && specificDate) {
         if (!dateStr.includes(specificDate)) return false;
       }
@@ -98,13 +103,10 @@ export default function GroomerPage() {
       <div className="p-4 md:p-6 w-full space-y-6">
         
         {/* Header */}
-        <div className="flex justify-between items-end mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-understory mb-1 flex items-center gap-2">
-              <Scissors size={28} className="text-lacustral" /> Dịch vụ Grooming/Spa
-            </h1>
-            <p className="text-lacustral text-sm">Chỉ hiển thị các bé đang hoặc đã thực hiện dịch vụ</p>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-understory flex items-center gap-2">
+            <Scissors size={28} className="text-lacustral" /> Dịch vụ Grooming/Spa
+          </h1>
         </div>
 
         {/* Filters & Tabs */}
@@ -208,11 +210,11 @@ export default function GroomerPage() {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex gap-4">
                     <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center text-3xl shadow-inner border border-gray-100 shrink-0">
-                      {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
+                      {booking.pet?.species === 'cat' ? '🐈' : '🐕'}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 leading-tight">{booking.pet_name}</h3>
-                      <p className="text-sm text-gray-500 mb-1">{booking.pet_breed} · {booking.pet_weight}kg</p>
+                      <h3 className="text-lg font-bold text-gray-900 leading-tight">{booking.pet?.pet_name}</h3>
+                      <p className="text-sm text-gray-500 mb-1">{booking.pet?.breed} · {booking.pet?.weight}kg</p>
                       <p className="text-xs font-medium text-gray-400">Mã đơn: {booking.booking_id}</p>
                     </div>
                   </div>
@@ -223,7 +225,7 @@ export default function GroomerPage() {
 
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 flex-1 border border-gray-100">
                   <p className="text-xs font-bold text-gray-400 uppercase mb-2">Dịch vụ</p>
-                  <p className="font-semibold text-gray-900 mb-4">{booking.service_type}</p>
+                  <p className="font-semibold text-gray-900 mb-4">{booking.booking_type}</p>
                   
                   {booking.addons && booking.addons.length > 0 && (
                     <div className="space-y-2">

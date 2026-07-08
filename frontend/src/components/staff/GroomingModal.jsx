@@ -7,7 +7,7 @@ export default function GroomingModal({ booking, onClose, onConfirm, onIncident 
   const [activeTab, setActiveTab] = useState('Dịch vụ');
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
 
-  const allServices = [booking.service_type, ...(booking.addons?.map(a => a.addon_name) || [])].filter(Boolean);
+  const allServices = booking.booking_service?.map(bs => bs.service?.service_name).filter(Boolean) || [];
 
   // Tab 1 Data
   const [checkedServices, setCheckedServices] = useState({});
@@ -15,7 +15,7 @@ export default function GroomingModal({ booking, onClose, onConfirm, onIncident 
 
   // Tab 2 Data (Health Record)
   const [healthData, setHealthData] = useState({
-    after_weight: booking.pet_weight || '',
+    after_weight: booking.pet?.weight || '',
     behavior_observed: '',
     skin_condition: '',
     coat_condition: '',
@@ -66,7 +66,7 @@ export default function GroomingModal({ booking, onClose, onConfirm, onIncident 
         {/* Header */}
         <div className="px-6 py-4 flex justify-between items-center bg-white border-b border-gray-100 shrink-0">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            Thực hiện Grooming — #{booking.booking_id} · {booking.pet_name}
+            Thực hiện Grooming — #{booking.booking_id} · {booking.pet?.pet_name}
           </h2>
           <div className="flex items-center gap-4">
             <button 
@@ -90,14 +90,18 @@ export default function GroomingModal({ booking, onClose, onConfirm, onIncident 
               {/* Pet Info Card */}
               <div className="bg-[#f8faff] border border-blue-100 rounded-xl p-5 shadow-sm">
                 <div className="flex gap-4 items-center mb-5">
-                  <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-sm border border-white shrink-0">
-                    {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
+                  <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-sm border border-white shrink-0 overflow-hidden">
+                    {booking.pet?.pet_ava ? (
+                      <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      booking.pet?.species === 'cat' ? '🐈' : '🐕'
+                    )}
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-xl font-bold text-[#1a3b5c]">{booking.pet_name}</h3>
-                        <p className="text-[#3b82f6] text-sm font-medium mt-1">{booking.pet_type} · {booking.pet_breed} · Nhỏ</p>
+                        <h3 className="text-xl font-bold text-[#1a3b5c]">{booking.pet?.pet_name}</h3>
+                        <p className="text-[#3b82f6] text-sm font-medium mt-1">{booking.pet?.species === 'cat' ? 'Mèo' : 'Chó'} · {booking.pet?.breed} · {booking.pet?.weight <= 5 ? 'Nhỏ' : (booking.pet?.weight <= 15 ? 'Vừa' : 'Lớn')}</p>
                       </div>
                       <span className="bg-orange-50 text-orange-700 px-2.5 py-1 rounded-full text-xs font-bold border border-orange-200 flex items-center gap-1 shrink-0">
                         <Clock size={12} /> Đang phục vụ
@@ -118,34 +122,39 @@ export default function GroomingModal({ booking, onClose, onConfirm, onIncident 
                 <div className="grid grid-cols-3 gap-4 mb-4 bg-white p-3 rounded-lg border border-blue-50">
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Cân nặng</p>
-                    <p className="font-semibold text-gray-800">{booking.pet_weight} kg</p>
+                    <p className="font-semibold text-gray-800">{booking.pet?.weight || 'N/A'} kg</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Tuổi</p>
-                    <p className="font-semibold text-gray-800">{booking.pet_age || 'N/A'}</p>
+                    <p className="font-semibold text-gray-800">
+                      {booking.pet?.dob ? (() => {
+                        const ageDate = new Date(Date.now() - new Date(booking.pet.dob).getTime());
+                        return Math.abs(ageDate.getUTCFullYear() - 1970) + ' tuổi';
+                      })() : 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Giới tính</p>
-                    <p className="font-semibold text-gray-800">{booking.pet_gender || 'N/A'}</p>
+                    <p className="font-semibold text-gray-800">{booking.pet?.gender === 'male' ? 'Đực' : (booking.pet?.gender === 'female' ? 'Cái' : 'N/A')}</p>
                   </div>
                 </div>
 
-                {booking.special_notes && (
+                {booking.pet?.special_notes && (
                   <div className="bg-orange-50 border border-orange-200 text-orange-800 p-3 rounded-lg text-sm flex items-start gap-2 mb-2">
                     <AlertTriangle size={16} className="shrink-0 mt-0.5 text-orange-500" />
-                    <p><span className="font-bold">Lưu ý:</span> {booking.special_notes}</p>
+                    <p><span className="font-bold">Lưu ý:</span> {booking.pet.special_notes}</p>
                   </div>
                 )}
                 
-                {booking.allergy_notes && (
+                {booking.pet?.allergy_notes && (
                   <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm flex items-start gap-2 mb-4">
                     <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-500" />
-                    <p><span className="font-bold">Dị ứng:</span> {booking.allergy_notes}</p>
+                    <p><span className="font-bold">Dị ứng:</span> {booking.pet.allergy_notes}</p>
                   </div>
                 )}
 
-                {booking.behavior_notes && (
-                  <p className="text-gray-700 text-sm mt-4">Hành vi: {booking.behavior_notes}</p>
+                {booking.pet?.behavior_notes && (
+                  <p className="text-gray-700 text-sm mt-4">Hành vi: {booking.pet.behavior_notes}</p>
                 )}
 
                 {booking.health_record?.photos && booking.health_record.photos.length > 0 && (

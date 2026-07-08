@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X, Check, Search, Calendar, ChevronRight, Activity, Camera, AlertTriangle, Plus } from 'lucide-react';
 import ImageUpload from '@/components/ui/ImageUpload';
-import { formatVND, fetchServices } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
+import { fetchGroomingServices } from '@/services/supabase/supabaseBookingApi';
 
 export default function CheckInModal({ booking, onClose, onConfirm }) {
   const [step, setStep] = useState(1);
@@ -26,7 +27,7 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
   });
 
   useEffect(() => {
-    fetchServices().then(data => setAvailableServices(data));
+    fetchGroomingServices().then(data => setAvailableServices(data));
   }, []);
 
   const steps = [
@@ -43,23 +44,51 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
     );
   };
 
+  const getServicePrice = (service) => {
+    const w = parseFloat(formData.weight) || 0;
+    const baseMap = {
+      'SER00001': { S: 200000, M: 250000, L: 300000 },
+      'SER00002': { S: 250000, M: 300000, L: 350000 },
+      'SV01': { S: 250000, M: 300000, L: 400000 },
+      'SV02': { S: 200000, M: 250000, L: 300000 },
+      'SV03': { S: 250000, M: 300000, L: 380000 },
+    };
+    const priceMap = baseMap[service.service_id];
+    if (priceMap) {
+      if (w <= 5) return priceMap.S;
+      if (w <= 15) return priceMap.M;
+      return priceMap.L;
+    }
+    return 100000;
+  };
+
   const getAddonsTotal = () => {
     return selectedAddons.reduce((sum, id) => {
-      const s = availableServices.find(s => s.id === id);
-      return sum + (s?.price || 0);
+      const s = availableServices.find(s => s.service_id === id);
+      return sum + (s ? getServicePrice(s) : 0);
     }, 0);
   };
 
-  const finalTotal = (booking.total_amount || 0) + getAddonsTotal();
+  const finalTotal = (booking.total_bill || 0) + getAddonsTotal();
 
   const handleSubmit = () => {
+    const addonsData = selectedAddons.map(id => {
+      const s = availableServices.find(srv => srv.service_id === id);
+      return { service_id: id, price: s ? getServicePrice(s) : 0 };
+    });
+
     onConfirm({
       ...formData,
       weight: parseFloat(formData.weight),
-      addons: selectedAddons,
-      total_amount: finalTotal
+      addons: addonsData,
+      total_bill: finalTotal
     });
   };
+
+  const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`;
+  const staffName = booking.staff ? `${booking.staff.last_name} ${booking.staff.first_name}` : '';
+  const roomOrSlotId = booking.booking_service?.[0]?.table_id || booking.booking_room?.[0]?.room_id;
+  const serviceName = booking.booking_service?.[0]?.service?.service_name || 'Lưu chuồng / Dịch vụ';
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -97,17 +126,17 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-lacustral mb-1">Khách hàng</p>
-                  <p className="font-bold text-understory text-lg">{booking.customer_name}</p>
-                  <p className="text-lacustral">{booking.customer_phone}</p>
+                  <p className="font-bold text-understory text-lg">{customerName}</p>
+                  <p className="text-lacustral">{booking.customer?.phone}</p>
                 </div>
                 <div>
                   <p className="text-sm text-lacustral mb-1">Loại dịch vụ</p>
-                  <p className="font-bold text-understory text-lg">{booking.service_category}</p>
-                  <p className="text-lacustral">{booking.service_name}</p>
+                  <p className="font-bold text-understory text-lg">{booking.booking_type}</p>
+                  <p className="text-lacustral">{serviceName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-lacustral mb-1">Groomer / Phòng</p>
-                  <p className="font-bold text-understory text-lg">{booking.assigned_staff_name || booking.room_or_slot_id || 'Chưa xếp'}</p>
+                  <p className="font-bold text-understory text-lg">{staffName || roomOrSlotId || 'Chưa xếp'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-lacustral mb-1">Tiền cọc</p>
@@ -118,12 +147,16 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
               {/* Pet Card */}
               <div className="bg-white border border-chloro/20 rounded-xl p-5 shadow-sm">
                 <div className="flex gap-4 items-center mb-5">
-                  <div className="w-14 h-14 bg-xantho/50 rounded-full flex items-center justify-center text-2xl border-2 border-white shadow-sm">
-                    {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-sm border border-white shrink-0 overflow-hidden">
+                    {booking.pet?.pet_ava ? (
+                      <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      booking.pet?.species === 'cat' ? '🐈' : '🐕'
+                    )}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-understory">{booking.pet_name}</h3>
-                    <p className="text-chloro text-sm font-medium">{booking.pet_type} · {booking.pet_breed}</p>
+                    <h3 className="text-xl font-bold text-understory">{booking.pet?.pet_name}</h3>
+                    <p className="text-chloro text-sm font-medium">{booking.pet?.species === 'cat' ? 'Mèo' : 'Chó'} · {booking.pet?.breed}</p>
                   </div>
                 </div>
 
@@ -260,12 +293,26 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
               <div>
                 <h3 className="font-bold text-understory text-lg mb-4">Xác nhận dịch vụ với khách hàng</h3>
                 <div className="space-y-3">
-                  <div className="p-4 border border-chloro/20 rounded-xl bg-white shadow-sm flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-lacustral mb-1 font-semibold">Dịch vụ gốc đã đặt</p>
-                      <p className="font-medium text-understory">{booking.service_name}</p>
+                  <div className="p-4 border border-chloro/20 rounded-xl bg-white shadow-sm">
+                    <div className="flex justify-between items-center mb-2 border-b pb-2">
+                      <p className="text-sm text-lacustral font-semibold">Dịch vụ gốc đã đặt</p>
+                      <span className="font-semibold text-understory">{formatVND(booking.total_bill || 0)}</span>
                     </div>
-                    <span className="font-semibold text-understory">{formatVND(booking.total_amount || 0)}</span>
+                    {booking.booking_type === 'Grooming' && booking.booking_service?.length > 0 ? (
+                      <ul className="space-y-1 mt-2">
+                        {booking.booking_service.map((srv, idx) => (
+                          <li key={idx} className="flex justify-between text-sm">
+                            <span className="text-gray-700 flex items-center gap-2">
+                              <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+                              {srv.service?.service_name || 'Dịch vụ'}
+                            </span>
+                            <span className="text-gray-500">{formatVND(srv.price || 0)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="font-medium text-understory text-sm">Hotel (Lưu chuồng) / Dịch vụ</p>
+                    )}
                   </div>
                   
                   <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-crown cursor-pointer transition-colors bg-white">
@@ -278,17 +325,16 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
                     <span className="font-medium text-understory">Khách yêu cầu thêm dịch vụ phát sinh</span>
                   </label>
 
-                  {/* Vùng chọn thêm dịch vụ */}
                   {isAddingService && (
                     <div className="mt-4 p-4 border border-chloro/30 rounded-xl bg-chloro/5 animate-in slide-in-from-top-2 duration-200">
                       <p className="text-sm font-semibold text-understory mb-3">Chọn dịch vụ bổ sung:</p>
                       <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                        {availableServices.filter(s => s.id !== booking.service_id).map(service => {
-                          const isSelected = selectedAddons.includes(service.id);
+                        {availableServices.filter(s => s.service_id !== booking.service_id).map(service => {
+                          const isSelected = selectedAddons.includes(service.service_id);
                           return (
                             <div 
-                              key={service.id}
-                              onClick={() => handleToggleAddon(service.id)}
+                              key={service.service_id}
+                              onClick={() => handleToggleAddon(service.service_id)}
                               className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                                 isSelected 
                                   ? 'bg-white border-chloro ring-1 ring-chloro' 
@@ -296,8 +342,8 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
                               }`}
                             >
                               <div className="flex flex-col">
-                                <span className="font-medium text-understory text-sm leading-tight">{service.name}</span>
-                                <span className="text-xs text-lacustral mt-1">{formatVND(service.price)}</span>
+                                <span className="font-medium text-understory text-sm leading-tight">{service.service_name}</span>
+                                <span className="text-xs text-lacustral mt-1">{formatVND(getServicePrice(service))}</span>
                               </div>
                               <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                                 isSelected ? 'bg-chloro border-chloro text-white' : 'border-gray-300'
@@ -327,7 +373,7 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
                 </div>
               </div>
 
-              {booking.service_type === 'Hotel' && (
+              {booking.booking_type === 'Hotel' && (
                 <div className="mt-4 p-4 border border-orange-200 bg-orange-50 rounded-xl">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input 
@@ -376,7 +422,7 @@ export default function CheckInModal({ booking, onClose, onConfirm }) {
           ) : (
             <button 
               onClick={handleSubmit}
-              disabled={booking.service_type === 'Hotel' && !isAgreed}
+              disabled={booking.booking_type === 'Hotel' && !isAgreed}
               className="px-6 py-3 bg-chloro hover:bg-green-700 text-white rounded-lg font-bold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check size={20} /> Xác nhận tiếp nhận

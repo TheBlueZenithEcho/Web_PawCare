@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Users, ClipboardCheck, ShoppingCart, PackageSearch, AlertTriangle, Home, LogOut, Scissors, CalendarDays, Siren } from 'lucide-react';
 import { useRouter } from 'next/router';
 import GlobalHeader from '../shared/GlobalHeader';
-import { STAFF_USERS } from '@/services/mock/mockUsers';
+import { getStaffById } from '@/services/supabase/supabaseUsersApi';
 
 export default function StaffLayout({ children }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const currentUser = STAFF_USERS[0];
+  useEffect(() => {
+    const fetchStaff = async () => {
+      const staff = await getStaffById('STF00002');
+      if (staff) {
+        setCurrentUser({
+          full_name: `${staff.last_name} ${staff.first_name}`,
+          role: staff.role === 'receptionist' ? 'Lễ tân' : 
+                staff.role === 'admin' ? 'Admin Master' :
+                staff.role === 'groomer' ? 'Groomer' :
+                staff.role === 'pet_sitter' ? 'Pet Sitter' :
+                staff.role === 'sales_staff' ? 'Nhân viên Sales' :
+                staff.role === 'warehouse_staff' ? 'Nhân viên Kho' : staff.role,
+        });
+      }
+    };
+    fetchStaff();
+  }, []);
+
   const initials = currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'NV';
 
   const navItems = [

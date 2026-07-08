@@ -151,10 +151,11 @@ export default function InventoryPortal() {
 
       <div className="flex flex-col h-full bg-gray-50">
         <div className="bg-white p-4 md:p-6 border-b border-gray-200 z-10 shrink-0">
-          <h1 className="text-xl md:text-2xl font-bold text-understory mb-4 flex items-center gap-2">
-            <PackageSearch size={28} className="text-chloro" />
-            Kho & Giao hàng
-          </h1>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <h1 className="text-2xl font-bold text-understory flex items-center gap-2">
+              <PackageSearch size={28} className="text-chloro" /> Kho & Giao hàng
+            </h1>
+          </div>
           
           <div className="flex flex-col-reverse md:flex-row justify-between md:items-center gap-4">
             {/* Text Tabs */}

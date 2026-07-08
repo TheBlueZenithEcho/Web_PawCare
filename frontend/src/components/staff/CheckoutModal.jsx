@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Check, Calculator } from 'lucide-react';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 
 export default function CheckoutModal({ booking, onClose, onConfirm }) {
   const totalBase = booking.total_amount || 0;
@@ -47,10 +47,14 @@ export default function CheckoutModal({ booking, onClose, onConfirm }) {
           
           {/* Pet Card */}
           <div className="bg-white border border-chloro/20 rounded-xl p-5 shadow-sm flex items-center justify-between">
-            <div className="flex gap-4 items-center">
-              <div className="w-12 h-12 bg-xantho/50 rounded-full flex items-center justify-center text-xl border-2 border-white shadow-sm">
-                {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
-              </div>
+            <div className="flex gap-4 items-center bg-white p-4 rounded-xl border border-chloro/20">
+              {booking.pet?.pet_ava ? (
+                <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+              ) : (
+                <div className="w-12 h-12 bg-xantho/50 rounded-full flex items-center justify-center text-xl border-2 border-white shadow-sm">
+                  {booking.pet?.species === 'cat' ? '🐈' : '🐕'}
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-bold text-understory">{booking.pet_name}</h3>
                 <p className="text-chloro text-xs font-medium">{booking.customer_name} · {booking.customer_phone}</p>

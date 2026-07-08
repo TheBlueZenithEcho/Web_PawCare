@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchOrders, updateOrderStatus } from '@/services/supabase/supabaseShopApi';
-import { formatVND } from '@/services/mock/mockApi';
+import { formatVND } from '@/utils/format';
 import { Search, Filter, Phone, MapPin, XCircle, CheckCircle, Clock, Package, CheckSquare, Eye, RefreshCw } from 'lucide-react';
 
 export default function OrdersList() {

@@ -6,15 +6,11 @@
  * ==========================================
  */
 
-import { PRODUCTS } from './mockProducts';
-
 // Helper: Format tiền
 export const formatVND = (amount) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
-// Giả lập Database state in memory
-let dbProducts = [...PRODUCTS];
 
 let dbOrders = [
   {

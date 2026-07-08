@@ -5,8 +5,8 @@ import SitterDiaryModal from '@/components/staff/SitterDiaryModal';
 import ExtendStayModal from '@/components/staff/ExtendStayModal';
 import AddServiceModal from '@/components/staff/AddServiceModal';
 import EmergencyModal from '@/components/staff/EmergencyModal';
-import { fetchBookings, addDiaryEntry } from '@/services/mock/mockApi';
-import { AlarmClock, AlertTriangle, Pin, CalendarDays, Plus, CalendarPlus, LogOut, BellRing, Search } from 'lucide-react';
+import { fetchBookings, addDiaryEntry, updateBookingStatus } from '@/services/supabase/supabaseBookingApi';
+import { AlarmClock, AlertTriangle, Pin, CalendarDays, Plus, CalendarPlus, LogOut, BellRing, Search, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SitterPage() {
@@ -38,15 +38,15 @@ export default function SitterPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchBookings({});
+      const data = await fetchBookings();
       // Lấy TẤT CẢ các đơn Hotel
-      const allHotelData = data.filter(b => b.service_category === 'Hotel');
+      const allHotelData = data.filter(b => b.booking_type === 'Hotel');
 
       // Tính toán stats
       const active = allHotelData.filter(b => b.status === 'PROCESSING');
       const pending = allHotelData.filter(b => b.status === 'PENDING');
-      const checkout = active.filter(b => isTodayOrTomorrow(b.checkout_date));
-      const activeOnly = active.filter(b => !isTodayOrTomorrow(b.checkout_date));
+      const checkout = active.filter(b => isTodayOrTomorrow(b.booking_room?.[0]?.check_out_date));
+      const activeOnly = active.filter(b => !isTodayOrTomorrow(b.booking_room?.[0]?.check_out_date));
 
       setStatsData({
         active: activeOnly.length,
@@ -106,6 +106,14 @@ export default function SitterPage() {
     );
   };
 
+  const handleCompleteStay = async (booking_id) => {
+    if (window.confirm('Xác nhận hoàn thành lưu trú và chuyển sang thanh toán?')) {
+      await updateBookingStatus(booking_id, 'COMPLETED_SERVICE');
+      toast.success('Đã hoàn thành lưu trú!');
+      await loadData();
+    }
+  };
+
   const stats = [
     { id: 'PROCESSING', label: 'Đang lưu trú', count: statsData.active, bg: 'bg-blue-50/50 hover:bg-blue-50 cursor-pointer transition-colors', color: 'text-blue-600' },
     { id: 'PENDING', label: 'Chờ check-in', count: statsData.pending, bg: 'bg-xantho/10 hover:bg-xantho/20 cursor-pointer transition-colors', color: 'text-orange-500' },
@@ -114,17 +122,20 @@ export default function SitterPage() {
 
   const filteredBookings = hotelBookings.filter(b => {
     let matchTab = true;
-    if (activeTab === 'PROCESSING') matchTab = b.status === 'PROCESSING' && !isTodayOrTomorrow(b.checkout_date);
-    if (activeTab === 'CHECKOUT') matchTab = b.status === 'PROCESSING' && isTodayOrTomorrow(b.checkout_date);
+    const checkoutDate = b.booking_room?.[0]?.check_out_date;
+    if (activeTab === 'PROCESSING') matchTab = b.status === 'PROCESSING' && !isTodayOrTomorrow(checkoutDate);
+    if (activeTab === 'CHECKOUT') matchTab = b.status === 'PROCESSING' && isTodayOrTomorrow(checkoutDate);
 
     if (!matchTab) return false;
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
+      const petName = b.pet?.pet_name || '';
+      const customerPhone = b.customer?.phone || '';
       return (
-        (b.pet_name && b.pet_name.toLowerCase().includes(term)) ||
+        petName.toLowerCase().includes(term) ||
         (b.booking_id && b.booking_id.toLowerCase().includes(term)) ||
-        (b.customer_phone && b.customer_phone.includes(term))
+        customerPhone.includes(term)
       );
     }
     return true;
@@ -135,14 +146,13 @@ export default function SitterPage() {
       <Head>
         <title>PawCare - Pet Sitter</title>
       </Head>
-      <div className="p-4 md:p-6 w-full space-y-8">
+      <div className="p-4 md:p-6 w-full space-y-6">
 
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-understory mb-1 flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-understory flex items-center gap-2">
             <CalendarDays size={28} className="text-lacustral" /> Quản lý lưu trú
           </h1>
-          <p className="text-lacustral text-sm">Nhật ký cần cập nhật trước 20:00 mỗi ngày</p>
         </div>
 
         {/* Filters & Tabs */}
@@ -154,8 +164,8 @@ export default function SitterPage() {
               <button
                 onClick={() => setActiveTab('PROCESSING')}
                 className={`pb-3 font-bold text-sm whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5 ${activeTab === 'PROCESSING'
-                    ? 'border-chloro text-chloro'
-                    : 'border-transparent text-gray-400 hover:text-gray-700'
+                  ? 'border-chloro text-chloro'
+                  : 'border-transparent text-gray-400 hover:text-gray-700'
                   }`}
               >
                 Đang lưu trú
@@ -166,8 +176,8 @@ export default function SitterPage() {
               <button
                 onClick={() => setActiveTab('CHECKOUT')}
                 className={`pb-3 font-bold text-sm whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5 ${activeTab === 'CHECKOUT'
-                    ? 'border-chloro text-chloro'
-                    : 'border-transparent text-gray-400 hover:text-gray-700'
+                  ? 'border-chloro text-chloro'
+                  : 'border-transparent text-gray-400 hover:text-gray-700'
                   }`}
               >
                 Chờ Check-out
@@ -206,6 +216,11 @@ export default function SitterPage() {
                   ? booking.diaries[booking.diaries.length - 1]
                   : null;
 
+                const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`;
+                const roomOrSlotId = booking.booking_room?.[0]?.room_id;
+                const checkinDate = booking.booking_room?.[0]?.check_in_date;
+                const checkoutDate = booking.booking_room?.[0]?.check_out_date;
+
                 return (
                   <div
                     key={booking.booking_id}
@@ -232,15 +247,15 @@ export default function SitterPage() {
                       {/* Pet & Owner Info */}
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl border border-gray-100 shrink-0">
-                          {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
+                          {booking.pet?.species === 'cat' ? '🐈' : '🐕'}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-base font-bold text-gray-900 truncate">{booking.pet_name}</h3>
+                          <h3 className="text-base font-bold text-gray-900 truncate">{booking.pet?.pet_name}</h3>
                           <div className="flex flex-col gap-0.5">
                             <div className="text-xs text-gray-500 truncate">
-                              {booking.customer_name}
+                              {customerName}
                             </div>
-                            <span className="text-xs font-bold text-chloro truncate">{booking.room_or_slot_id}</span>
+                            <span className="text-xs font-bold text-chloro truncate">{roomOrSlotId}</span>
                           </div>
                         </div>
                       </div>
@@ -250,11 +265,11 @@ export default function SitterPage() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="text-[10px] font-bold text-gray-400 uppercase">Check-in</div>
-                            <div className="text-sm font-semibold text-gray-700 leading-tight">{booking.checkin_date || 'N/A'}</div>
+                            <div className="text-sm font-semibold text-gray-700 leading-tight">{checkinDate || 'N/A'}</div>
                           </div>
                           <div className="text-right">
                             <div className="text-[10px] font-bold text-gray-400 uppercase">Check-out</div>
-                            <div className="text-sm font-bold text-chloro">{booking.checkout_date || 'N/A'}</div>
+                            <div className="text-sm font-bold text-chloro">{checkoutDate || 'N/A'}</div>
                           </div>
                         </div>
                       </div>
@@ -308,15 +323,21 @@ export default function SitterPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleNotifyN8n(booking)}
-                              className="flex-1 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors text-sm"
+                              className="flex-1 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors text-xs"
                             >
                               <BellRing size={16} /> Nhắc
                             </button>
                             <button
                               onClick={() => { setSelectedBooking(booking); setModalType('DIARY'); }}
-                              className="flex-1 py-2.5 bg-chloro hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-sm"
+                              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs"
                             >
                               📝 Nhật ký
+                            </button>
+                            <button
+                              onClick={() => handleCompleteStay(booking.booking_id)}
+                              className="flex-1 py-2.5 bg-chloro hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm text-xs px-1"
+                            >
+                              <CheckCircle size={16} className="shrink-0" /> Xong
                             </button>
                           </div>
                         ) : (

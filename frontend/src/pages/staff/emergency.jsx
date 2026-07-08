@@ -153,11 +153,10 @@ export default function EmergencyPage() {
       <div className="p-4 md:p-6 w-full space-y-6">
 
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-understory mb-1 flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-understory flex items-center gap-2">
             <AlertTriangle size={28} className="text-[#4c9535]" /> Quản lý Khẩn cấp & Ngoại lệ
           </h1>
-          <p className="text-lacustral text-sm">Dashboard dành cho Admin/Manager xử lý các sự cố phát sinh.</p>
         </div>
 
         {/* Action Bar */}

@@ -6,29 +6,10 @@
  * ==========================================
  */
 
-import { SERVICES } from './mockServices';
-import { BOOKINGS as MOCK_BOOKINGS } from './mockBookings';
-import { PRODUCTS } from './mockProducts';
+// Giả lập Database state in memory cho các tính năng chưa có Supabase
+let dbBookings = [];
 
-// Giả lập Database state in memory
-let dbBookings = [...MOCK_BOOKINGS];
-let dbProducts = [...PRODUCTS];
 
-export const fetchProducts = async (filters = {}) => {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  let result = [...dbProducts];
-  if (filters.category && filters.category !== 'Tất cả') {
-    result = result.filter(p => p.category === filters.category);
-  }
-  if (filters.pet_type && filters.pet_type !== 'Tất cả') {
-    result = result.filter(p => p.pet_type.includes(filters.pet_type));
-  }
-  if (filters.search) {
-    const term = filters.search.toLowerCase();
-    result = result.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term));
-  }
-  return result;
-};
 
 // Helper để format tiền
 export const formatVND = (amount) => {

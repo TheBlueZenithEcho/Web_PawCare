@@ -18,31 +18,84 @@ export const fetchCustomers = async () => {
 };
 
 export const createCustomer = async (customerData) => {
-  // Generate a random ID if not provided (e.g. CUST-xxxx)
-  const customer_id = customerData.customer_id || `CUST-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  try {
+    // Lấy customer_id cao nhất hiện tại
+    const { data: lastCustomer, error: idError } = await supabase
+      .from('customer')
+      .select('customer_id')
+      .order('customer_id', { ascending: false })
+      .limit(1);
 
-  const { data, error } = await supabase
-    .from('customer')
-    .insert([
-      {
-        customer_id,
-        last_name: customerData.last_name,
-        first_name: customerData.first_name,
-        phone: customerData.phone,
-        email: customerData.email,
-        is_account_activated: customerData.is_account_activated !== undefined ? customerData.is_account_activated : true,
-        total_spent: customerData.total_spent || 0,
-        password_hash: customerData.password_hash || 'hash' // mock password
+    if (idError) throw idError;
+
+    let nextIdNumber = 1;
+    if (lastCustomer && lastCustomer.length > 0 && lastCustomer[0].customer_id) {
+      const lastIdStr = lastCustomer[0].customer_id;
+      const numPart = parseInt(lastIdStr.replace('CUS', ''), 10);
+      if (!isNaN(numPart)) {
+        nextIdNumber = numPart + 1;
       }
-    ])
-    .select()
-    .single();
+    }
+    const customer_id = `CUS${nextIdNumber.toString().padStart(5, '0')}`;
 
-  if (error) {
-    console.error('Error creating customer:', error);
+    let user_id = null;
+
+    const email = customerData.email ? customerData.email.trim() : null;
+    const phone = customerData.phone ? customerData.phone.trim() : null;
+
+    // Nếu chọn cấp tài khoản thì tạo qua Supabase Auth
+    if (customerData.create_account && email) {
+      const password = Math.random().toString(36).slice(-8); // Random password
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        throw new Error('Lỗi tạo tài khoản đăng nhập: ' + authError.message);
+      }
+
+      if (authData?.user?.id) {
+        user_id = authData.user.id;
+        // Có thể lưu password này ở đâu đó để báo cho khách nếu cần, nhưng tạm thời Supabase sẽ gửi email xác nhận.
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('customer')
+      .insert([
+        {
+          customer_id,
+          user_id,
+          last_name: customerData.last_name,
+          first_name: customerData.first_name,
+          phone: phone,
+          email: email
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error in createCustomer:', error);
     throw error;
   }
-  return data;
+};
+
+export const fetchBookingsForUsers = async () => {
+  const { data, error } = await supabase
+    .from('booking')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching bookings:', error);
+    throw error;
+  }
+  return data || [];
 };
 
 export const updateCustomer = async (customer_id, customerData) => {
@@ -53,7 +106,7 @@ export const updateCustomer = async (customer_id, customerData) => {
       first_name: customerData.first_name,
       phone: customerData.phone,
       email: customerData.email,
-      is_account_activated: customerData.is_account_activated
+      cus_ava: customerData.cus_ava
     })
     .eq('customer_id', customer_id)
     .select()
@@ -67,7 +120,22 @@ export const updateCustomer = async (customer_id, customerData) => {
 };
 
 export const deleteCustomer = async (customer_id) => {
-  // Try to delete. Might fail if there are foreign key constraints (pets/bookings)
+  // 1. Tìm tất cả các booking của khách hàng
+  const { data: bookings } = await supabase.from('booking').select('booking_id').eq('customer_id', customer_id);
+  
+  if (bookings && bookings.length > 0) {
+    const bookingIds = bookings.map(b => b.booking_id);
+    // Xoá chi tiết dịch vụ và phòng
+    await supabase.from('booking_service').delete().in('booking_id', bookingIds);
+    await supabase.from('booking_room').delete().in('booking_id', bookingIds);
+    // Xoá booking
+    await supabase.from('booking').delete().in('booking_id', bookingIds);
+  }
+
+  // 2. Xoá tất cả thú cưng của khách hàng
+  await supabase.from('pet').delete().eq('customer_id', customer_id);
+
+  // 3. Xoá khách hàng
   const { error } = await supabase
     .from('customer')
     .delete()
@@ -78,6 +146,26 @@ export const deleteCustomer = async (customer_id) => {
     throw error;
   }
   return true;
+};
+
+export const uploadCustomerAvatar = async (customer_id, file) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `customers/${customer_id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file);
+
+  if (uploadError) {
+    console.error('Error uploading customer avatar:', uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName);
+
+  return publicUrlData.publicUrl;
 };
 
 // ==========================================
@@ -98,8 +186,38 @@ export const fetchPets = async () => {
 };
 
 export const createPet = async (petData) => {
-  const pet_id = petData.pet_id || `PET-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  let pet_id = petData.pet_id;
+  
+  if (!pet_id) {
+    // Lấy pet_id cao nhất hiện tại
+    const { data: lastPet, error: idError } = await supabase
+      .from('pet')
+      .select('pet_id')
+      // Lọc bỏ những mã bị sai format có dấu '-' để tìm đúng mã lớn nhất
+      .not('pet_id', 'like', '%-%')
+      .order('pet_id', { ascending: false })
+      .limit(1);
 
+    if (idError) throw idError;
+
+    let nextIdNumber = 1;
+    if (lastPet && lastPet.length > 0 && lastPet[0].pet_id) {
+      const lastIdStr = lastPet[0].pet_id;
+      const numPart = parseInt(lastIdStr.replace('PET', ''), 10);
+      if (!isNaN(numPart)) {
+        nextIdNumber = numPart + 1;
+      }
+    }
+    pet_id = `PET${nextIdNumber.toString().padStart(5, '0')}`;
+  }
+
+  const speciesMap = { 'Chó': 'dog', 'Mèo': 'cat' };
+  const sizeMap = { 'Nhỏ (Dưới 5kg)': 'S', 'Vừa (5-15kg)': 'M', 'Lớn (Trên 15kg)': 'L' };
+  
+  // Xác định gender tạm (hoặc nếu trên UI không có thì gán mặc định)
+  // Vì hiện tại UI chưa có chọn Giới tính, tạm thời mình set 'male' hoặc để rỗng tuỳ DB
+  // nhưng database yêu cầu Enum gender_enum có thể không cho null
+  
   const { data, error } = await supabase
     .from('pet')
     .insert([
@@ -107,12 +225,12 @@ export const createPet = async (petData) => {
         pet_id,
         customer_id: petData.customer_id,
         pet_name: petData.pet_name,
-        species: petData.species,
-        size: petData.size,
+        species: speciesMap[petData.species] || 'dog',
+        size: sizeMap[petData.size] || 'S',
         breed: petData.breed,
         weight: petData.weight || 0,
         dob: petData.dob || '2020-01-01',
-        gender: petData.gender,
+        gender: petData.gender || 'male',
         behavior_notes: petData.behavior_notes,
         allergy_notes: petData.allergy_notes,
         special_notes: petData.special_notes
@@ -141,7 +259,8 @@ export const updatePet = async (pet_id, petData) => {
       gender: petData.gender,
       behavior_notes: petData.behavior_notes,
       allergy_notes: petData.allergy_notes,
-      special_notes: petData.special_notes
+      special_notes: petData.special_notes,
+      pet_ava: petData.pet_ava
     })
     .eq('pet_id', pet_id)
     .select()
@@ -152,6 +271,27 @@ export const updatePet = async (pet_id, petData) => {
     throw error;
   }
   return data;
+};
+
+export const uploadPetAvatar = async (pet_id, file) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${pet_id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `pets/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, file);
+
+  if (uploadError) {
+    console.error('Error uploading pet avatar:', uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
 };
 
 export const deletePet = async (pet_id) => {
@@ -165,4 +305,22 @@ export const deletePet = async (pet_id) => {
     throw error;
   }
   return true;
+};
+
+// ==========================================
+// STAFF API
+// ==========================================
+
+export const getStaffById = async (staffId) => {
+  const { data, error } = await supabase
+    .from('staff')
+    .select('*')
+    .eq('staff_id', staffId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching staff:', error);
+    return null;
+  }
+  return data;
 };

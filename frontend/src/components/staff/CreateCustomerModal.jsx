@@ -9,7 +9,7 @@ export default function CreateCustomerModal({ onClose, onSuccess, initialData })
     first_name: initialData?.first_name || '',
     phone: initialData?.phone || '',
     email: initialData?.email || '',
-    create_account: true,
+    create_account: false,
     pet_name: '',
     species: 'Chó',
     breed: '',
@@ -35,7 +35,7 @@ export default function CreateCustomerModal({ onClose, onSuccess, initialData })
             first_name: formData.first_name,
             phone: formData.phone,
             email: formData.email,
-            is_account_activated: formData.create_account
+            create_account: formData.create_account
           });
 
           if (formData.pet_name) {

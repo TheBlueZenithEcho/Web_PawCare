@@ -56,6 +56,12 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
     return badges[status] || <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-semibold">{status}</span>;
   };
 
+  const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`;
+  const petSpecies = booking.pet?.species;
+  const roomOrSlotId = booking.booking_service?.[0]?.table_id || booking.booking_room?.[0]?.room_id;
+  const rawBookingTime = booking.booking_service?.[0]?.slot_start || booking.booking_room?.[0]?.check_in_date || booking.created_at;
+  const bookingTime = rawBookingTime ? new Date(rawBookingTime).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A';
+
   return (
     <>
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -67,7 +73,7 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
             <h2 className="text-xl font-bold text-understory">Chi tiết Booking: {booking.booking_id}</h2>
             <div className="mt-2 flex items-center gap-2">
               <span className="text-sm text-gray-500">Trạng thái:</span>
-              {getStatusBadge(booking.status, booking.service_type || booking.service_category)}
+              {getStatusBadge(booking.status, booking.booking_type)}
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
@@ -83,11 +89,11 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
               <h3 className="font-bold text-gray-800 border-b pb-2">Thông tin Khách hàng</h3>
               <div>
                 <p className="text-sm text-gray-500">Họ tên</p>
-                <p className="font-semibold text-gray-900">{booking.customer_name}</p>
+                <p className="font-semibold text-gray-900">{customerName}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Số điện thoại</p>
-                <p className="font-semibold text-gray-900">{booking.customer_phone}</p>
+                <p className="font-semibold text-gray-900">{booking.customer?.phone}</p>
               </div>
             </div>
 
@@ -96,17 +102,22 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
               <div>
                 <p className="text-sm text-gray-500">Tên thú cưng</p>
                 <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <span className="text-xl">{booking.pet_type === 'Mèo' ? '🐈' : '🐕'}</span> {booking.pet_name}
+                  {booking.pet?.pet_ava ? (
+                    <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                  ) : (
+                    <span className="text-xl">{petSpecies === 'cat' ? '🐈' : '🐕'}</span>
+                  )}
+                  {booking.pet?.pet_name}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <p className="text-sm text-gray-500">Loài / Giống</p>
-                  <p className="font-semibold text-gray-900">{booking.pet_type} - {booking.pet_breed}</p>
+                  <p className="font-semibold text-gray-900">{petSpecies === 'cat' ? 'Mèo' : 'Chó'} - {booking.pet?.breed}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Cân nặng</p>
-                  <p className="font-semibold text-gray-900">{booking.pet_weight}kg</p>
+                  <p className="font-semibold text-gray-900">{booking.pet?.weight}kg</p>
                 </div>
               </div>
             </div>
@@ -117,25 +128,88 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
               <Tag size={18}/> Chi tiết Dịch vụ
             </h3>
             <div className="grid grid-cols-2 gap-y-4">
-              <div>
-                <p className="text-sm text-gray-500">Dịch vụ</p>
-                <p className="font-semibold text-gray-900">{booking.service_type || booking.service_category}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Thời gian</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-1">
-                  <Clock size={14}/> {booking.booking_time}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Slot / Phòng</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-1">
-                  <MapPin size={14}/> {booking.room_or_slot_id || 'Chưa xếp'}
-                </p>
-              </div>
+              {booking.booking_type === 'Grooming' ? (
+                <>
+                  <div className="col-span-2">
+                    <p className="text-sm text-gray-500 mb-2">Danh sách dịch vụ</p>
+                    {booking.booking_service && booking.booking_service.length > 0 ? (
+                      <ul className="space-y-2">
+                        {booking.booking_service.map((srv, idx) => (
+                          <li key={idx} className="flex justify-between items-center text-sm bg-white p-2 rounded border border-gray-100">
+                            <span className="font-semibold text-gray-800 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                              {srv.service?.service_name || 'Dịch vụ'}
+                            </span>
+                            <span className="text-gray-600 font-medium">
+                              {(srv.price || 0).toLocaleString('vi-VN')}đ
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Chưa có danh sách dịch vụ chi tiết</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Thời gian bắt đầu</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-1">
+                      <Clock size={14}/> {bookingTime}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Bàn/Phòng</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-1">
+                      <MapPin size={14}/> {roomOrSlotId || 'Chưa xếp'}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-sm text-gray-500">Dịch vụ</p>
+                    <p className="font-semibold text-gray-900">Hotel (Lưu chuồng)</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Phòng lưu trú</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-1">
+                      <MapPin size={14}/> {roomOrSlotId || 'Chưa xếp'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Ngày gửi</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-1">
+                      <Calendar size={14}/> {booking.booking_room?.[0]?.check_in_date ? new Date(booking.booking_room[0].check_in_date).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Ngày trả</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-1">
+                      <Calendar size={14}/> {booking.booking_room?.[0]?.check_out_date ? new Date(booking.booking_room[0].check_out_date).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A'}
+                    </p>
+                  </div>
+                  {booking.booking_service && booking.booking_service.length > 0 && (
+                    <div className="col-span-2 mt-2">
+                      <p className="text-sm text-gray-500 mb-2">Dịch vụ phát sinh</p>
+                      <ul className="space-y-2">
+                        {booking.booking_service.map((srv, idx) => (
+                          <li key={idx} className="flex justify-between items-center text-sm bg-white p-2 rounded border border-gray-100">
+                            <span className="font-semibold text-gray-800 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                              {srv.service?.service_name || 'Dịch vụ'}
+                            </span>
+                            <span className="text-gray-600 font-medium">
+                              {(srv.price || 0).toLocaleString('vi-VN')}đ
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
               <div>
                 <p className="text-sm text-gray-500">Tổng tiền tạm tính</p>
-                <p className="font-bold text-[#1a66cc]">{(booking.total_amount || 0).toLocaleString('vi-VN')}đ</p>
+                <p className="font-bold text-[#1a66cc]">{(booking.total_bill || 0).toLocaleString('vi-VN')}đ</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Tiền cọc</p>
@@ -143,16 +217,7 @@ export default function ViewBookingModal({ booking, onClose, onUpdateStatus }) {
               </div>
             </div>
             
-            {booking.addons && booking.addons.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-blue-200">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Dịch vụ phát sinh thêm:</p>
-                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                  {booking.addons.map((a, i) => (
-                    <li key={i}>{a.addon_name} - {a.price.toLocaleString('vi-VN')}đ</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+
           </div>
 
         </div>

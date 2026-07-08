@@ -45,8 +45,12 @@ export default function ServiceLogModal({ booking, onClose, onConfirm }) {
         <div className="p-6 bg-crown/50 space-y-5 max-h-[70vh] overflow-y-auto">
           
           <div className="flex gap-4 items-center bg-white p-4 rounded-xl border border-chloro/20">
-            <div className="w-12 h-12 bg-xantho/50 rounded-full flex items-center justify-center text-xl border-2 border-white shadow-sm">
-              {booking.pet_type === 'Mèo' ? '🐈' : '🐕'}
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl shadow-sm border border-white shrink-0 overflow-hidden">
+              {booking.pet?.pet_ava ? (
+                <img src={booking.pet.pet_ava} alt="Pet avatar" className="w-full h-full object-cover" />
+              ) : (
+                booking.pet?.species === 'cat' ? '🐈' : '🐕'
+              )}
             </div>
             <div>
               <h3 className="font-bold text-understory">{booking.pet_name}</h3>

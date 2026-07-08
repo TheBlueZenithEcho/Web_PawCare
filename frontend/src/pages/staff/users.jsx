@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { Search, User, Users, Phone, Mail, Dog, Activity, Clock, ShieldCheck, ChevronRight, Filter, ShieldAlert } from 'lucide-react';
 import StaffLayout from '@/components/layout/StaffLayout';
-import { BOOKINGS } from '@/services/mock/mockBookings';
-import { formatVND } from '@/services/mock/mockApi';
-import { CUSTOMERS, PETS } from '@/services/mock/mockUsers';
+import { formatVND } from '@/utils/format';
 import UserProfileModal from '@/components/staff/UserProfileModal';
 import CreateCustomerModal from '@/components/staff/CreateCustomerModal';
 import PetProfileModal from '@/components/staff/PetProfileModal';
-import { fetchCustomers } from '@/services/supabase/supabaseUsersApi';
+import ViewBookingModal from '@/components/staff/ViewBookingModal';
+import { fetchCustomers, fetchPets } from '@/services/supabase/supabaseUsersApi';
+import { fetchBookings } from '@/services/supabase/supabaseBookingApi';
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,26 +22,45 @@ export default function UsersPage() {
 
   const [customers, setCustomers] = useState([]);
   const [pets, setPets] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [selectedBookingForView, setSelectedBookingForView] = useState(null);
+
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const loadData = async () => {
+    try {
+      let tempError = null;
+      const custData = await fetchCustomers().catch(e => {
+        console.error('Failed to load customers:', e);
+        return [];
+      });
+      const petData = await fetchPets().catch(e => {
+        console.error('Failed to load pets:', e);
+        tempError = e.message || e.toString();
+        return [];
+      });
+      const bookData = await fetchBookings().catch(e => {
+        console.error('Failed to load bookings:', e);
+        return [];
+      });
+      
+      setCustomers(custData || []);
+      setPets(petData || []);
+      setBookings(bookData || []);
+      if (tempError) setErrorMsg(tempError);
+    } catch (e) {
+      console.error(e);
+      setErrorMsg(e.message || e.toString());
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchCustomers();
-        setCustomers(data);
-      } catch (e) {
-        console.error(e);
-      }
-    };
     loadData();
   }, []);
 
   useEffect(() => {
     if (mainTab === 'CUSTOMERS') {
-      let results = customers.map(c => {
-        const completedBookings = BOOKINGS.filter(b => b.customer_phone === c.phone && (b.status === 'DONE' || b.status === 'PAID'));
-        const calculatedTotal = completedBookings.reduce((sum, b) => sum + (b.total_amount || 0), 0);
-        return { ...c, total_spent: calculatedTotal };
-      });
+      let results = customers;
       if (searchTerm) {
         const lower = searchTerm.toLowerCase();
         results = results.filter(c =>
@@ -62,48 +82,50 @@ export default function UsersPage() {
       }
       setFilteredPets(results);
     }
-  }, [searchTerm, mainTab, customers, pets]);
+  }, [searchTerm, mainTab, customers, pets, bookings]);
 
   const getPetsCount = (customerId) => {
-    return PETS.filter(p => p.customer_id === customerId).length;
+    return pets.filter(p => p.customer_id === customerId).length;
   };
 
   return (
     <StaffLayout>
+      <Head>
+        <title>PawCare - Tài khoản & Hồ sơ</title>
+      </Head>
       <div className="p-4 md:p-6 w-full space-y-6">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-understory mb-1 flex items-center gap-3">
-              <Users size={28} className="text-lacustral" />
-              <div className="flex gap-4 items-center">
-                <button
-                  onClick={() => setMainTab('CUSTOMERS')}
-                  className={`transition-colors ${mainTab === 'CUSTOMERS' ? 'text-understory' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                  Khách hàng
-                </button>
-                <span className="text-gray-300 font-light">|</span>
-                <button
-                  onClick={() => setMainTab('PETS')}
-                  className={`transition-colors ${mainTab === 'PETS' ? 'text-understory' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                  Thú cưng
-                </button>
-              </div>
-            </h1>
-            <p className="text-lacustral text-sm ml-[40px]">Quản lý thông tin khách hàng và hồ sơ thú cưng</p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-understory flex items-center gap-3">
+            <Users size={28} className="text-lacustral" />
+            Tài khoản & Hồ sơ
+            <div className="ml-4 bg-gray-100/80 p-1 rounded-full flex text-sm font-semibold border border-gray-200/60">
+              <button
+                onClick={() => setMainTab('CUSTOMERS')}
+                className={`px-4 py-1.5 rounded-full transition-all ${mainTab === 'CUSTOMERS' ? 'bg-white text-understory shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Khách hàng
+              </button>
+              <button
+                onClick={() => setMainTab('PETS')}
+                className={`px-4 py-1.5 rounded-full transition-all ${mainTab === 'PETS' ? 'bg-white text-understory shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Thú cưng
+              </button>
+            </div>
+          </h1>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => {
+                setCreateModalData(null);
+                setIsCreateModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 bg-[#5e9e30] hover:bg-[#4d8227] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm w-full sm:w-auto"
+            >
+              <User size={20} /> Thêm khách hàng mới
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setCreateModalData(null);
-              setIsCreateModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 bg-[#5e9e30] hover:bg-[#4d8227] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm w-full sm:w-auto"
-          >
-            <User size={20} /> Thêm khách hàng mới
-          </button>
         </div>
 
         {/* Content Area */}
@@ -153,8 +175,12 @@ export default function UsersPage() {
                       >
                         <td className="px-6 py-4 rounded-l-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-understory/5 text-understory flex items-center justify-center font-bold text-sm ring-1 ring-understory/10">
-                              {customer.first_name.charAt(0)}
+                            <div className="w-10 h-10 rounded-full bg-understory/5 text-understory flex items-center justify-center font-bold text-sm ring-1 ring-understory/10 overflow-hidden">
+                              {customer.cus_ava ? (
+                                <img src={customer.cus_ava} alt="Customer Avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                customer.first_name.charAt(0)
+                              )}
                             </div>
                             <div>
                               <p className="font-bold text-gray-900 group-hover:text-chloro transition-colors">{customer.last_name} {customer.first_name}</p>
@@ -181,13 +207,13 @@ export default function UsersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          {customer.is_account_activated ? (
+                          {customer.user_id ? (
                             <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200 shadow-sm">
-                              <ShieldCheck size={14} /> Đã kích hoạt
+                              <ShieldCheck size={14} /> Khách có tài khoản
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-200">
-                              <User size={14} /> Điểm bán / Walk-in
+                              <User size={14} /> Khách vãng lai
                             </span>
                           )}
                         </td>
@@ -217,12 +243,16 @@ export default function UsersPage() {
                   {filteredPets.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="text-center py-12 text-gray-400">
-                        Không tìm thấy thú cưng nào.
+                        {errorMsg ? (
+                          <div className="text-red-500 font-bold">Lỗi tải dữ liệu: {errorMsg}</div>
+                        ) : (
+                          "Không tìm thấy thú cưng nào."
+                        )}
                       </td>
                     </tr>
                   ) : (
                     filteredPets.map(pet => {
-                      const owner = CUSTOMERS.find(c => c.customer_id === pet.customer_id);
+                      const owner = customers.find(c => c.customer_id === pet.customer_id);
                       return (
                         <tr
                           key={pet.pet_id}
@@ -231,8 +261,12 @@ export default function UsersPage() {
                         >
                           <td className="px-6 py-4 rounded-l-xl">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-xl shadow-sm ring-1 ring-orange-100">
-                                {pet.species === 'Mèo' ? '🐈' : '🐕'}
+                              <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-xl shadow-sm ring-1 ring-orange-100 overflow-hidden">
+                                {pet.pet_ava ? (
+                                  <img src={pet.pet_ava} alt={pet.pet_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  pet.species === 'cat' ? '🐈' : '🐕'
+                                )}
                               </div>
                               <div>
                                 <p className="font-bold text-gray-900 group-hover:text-chloro transition-colors">{pet.pet_name}</p>
@@ -281,23 +315,30 @@ export default function UsersPage() {
       {selectedUser && (
         <UserProfileModal
           customer={selectedUser}
-          pets={PETS.filter(p => p.customer_id === selectedUser.customer_id)}
-          bookings={BOOKINGS.filter(b => b.customer_phone === selectedUser.phone)}
+          pets={pets.filter(p => p.customer_id === selectedUser.customer_id)}
+          bookings={bookings.filter(b => b.customer_id === selectedUser.customer_id)}
           onClose={() => setSelectedUser(null)}
+          onSuccess={() => {
+            loadData();
+            // Cập nhật lại state selectedUser để giao diện Modal cũng tự động update mà không cần đóng mở lại (tuỳ chọn)
+          }}
           onOpenCreateAccount={(customer) => {
             setSelectedUser(null);
             setCreateModalData(customer);
             setIsCreateModalOpen(true);
           }}
+          onViewBooking={(bk) => setSelectedBookingForView(bk)}
         />
       )}
 
       {selectedPet && (
         <PetProfileModal
           pet={selectedPet}
-          owner={CUSTOMERS.find(c => c.customer_id === selectedPet.customer_id)}
-          bookings={BOOKINGS.filter(b => b.pet_name === selectedPet.pet_name && b.customer_phone === CUSTOMERS.find(c => c.customer_id === selectedPet.customer_id)?.phone)}
+          owner={customers.find(c => c.customer_id === selectedPet.customer_id)}
+          bookings={bookings.filter(b => b.pet_id === selectedPet.pet_id)}
           onClose={() => setSelectedPet(null)}
+          onSuccess={loadData}
+          onViewBooking={(bk) => setSelectedBookingForView(bk)}
         />
       )}
 
@@ -308,6 +349,13 @@ export default function UsersPage() {
             setIsCreateModalOpen(false);
             setCreateModalData(null);
           }}
+        />
+      )}
+
+      {selectedBookingForView && (
+        <ViewBookingModal
+          booking={selectedBookingForView}
+          onClose={() => setSelectedBookingForView(null)}
         />
       )}
     </StaffLayout>
