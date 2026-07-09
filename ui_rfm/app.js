@@ -420,17 +420,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Chọn ngẫu nhiên 1 khách hàng trong nhóm để gửi demo (tránh spam)
-        const randomCustomer = targetCustomers[Math.floor(Math.random() * targetCustomers.length)];
-        const demoCustomers = [randomCustomer];
-
         closeBulkModal();
-        showToast(`Đang gửi 1 email demo cho nhóm ${seg}...`);
+        showToast(`Đang gửi loạt ${targetCustomers.length} emails cho nhóm ${seg}...`);
 
         let successCount = 0;
         let failCount = 0;
 
-        for (let cust of demoCustomers) {
+        for (let cust of targetCustomers) {
             // Ép gửi về email demo để không bị spam lung tung
             cust.email = 'quoclb23416@st.uel.edu.vn';
             
@@ -452,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else failCount++;
         }
 
-        showToast(`Đã gửi thành công 1 email demo cho nhóm ${seg}!`);
+        showToast(`Đã gửi thành công ${successCount}/${targetCustomers.length} emails cho nhóm ${seg}!`);
     };
 
     // Events for filters
