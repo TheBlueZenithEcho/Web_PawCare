@@ -427,8 +427,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let failCount = 0;
 
         for (let cust of targetCustomers) {
-            // Ép gửi về email demo để không bị spam lung tung
-            cust.email = 'quoclb23416@st.uel.edu.vn';
+            // Lấy đúng email thật của khách hàng
+            const recipientEmail = cust.email || 'khachhang@example.com';
             
             const customMessage = templateMessage.replace(/{name}/g, cust.name);
             let formattedMessage = generateEmailHTML(customMessage);
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "customer_id": cust.customer_id,
                 "name": cust.name,
                 "new_segment": cust.Segment,
-                "to_email": cust.email,
+                "to_email": recipientEmail,
                 "subject": subjectTemplates[cust.Segment] || "PawCare",
                 "custom_message": formattedMessage,
                 "trigger_event": "bulk_trigger"
