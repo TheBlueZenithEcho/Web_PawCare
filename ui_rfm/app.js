@@ -416,13 +416,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Chọn ngẫu nhiên 1 khách hàng trong nhóm để gửi demo (tránh spam)
+        const randomCustomer = targetCustomers[Math.floor(Math.random() * targetCustomers.length)];
+        const demoCustomers = [randomCustomer];
+
         closeBulkModal();
-        showToast(`Đang gửi loạt ${targetCustomers.length} emails cho nhóm ${seg}...`);
+        showToast(`Đang gửi 1 email demo cho nhóm ${seg}...`);
 
         let successCount = 0;
         let failCount = 0;
 
-        for (let cust of targetCustomers) {
+        for (let cust of demoCustomers) {
             // Ép gửi về email demo để không bị spam lung tung
             cust.email = 'quoclb23416@st.uel.edu.vn';
             
@@ -444,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else failCount++;
         }
 
-        showToast(`Đã gửi thành công ${successCount}/${targetCustomers.length} emails!`);
+        showToast(`Đã gửi thành công 1 email demo cho nhóm ${seg}!`);
     };
 
     // --- BIRTHDAY LOGIC ---
@@ -487,13 +491,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Chọn ngẫu nhiên 1 khách hàng sinh nhật trong tháng để gửi demo
+        const randomCustomer = targetCustomers[Math.floor(Math.random() * targetCustomers.length)];
+        const demoCustomers = [randomCustomer];
+
         closeBirthdayModal();
-        showToast(`Đang gửi loạt ${targetCustomers.length} thiệp sinh nhật (Tháng ${month})...`);
+        showToast(`Đang gửi 1 thiệp sinh nhật demo (Tháng ${month})...`);
 
         let successCount = 0;
         let failCount = 0;
 
-        for (let cust of targetCustomers) {
+        for (let cust of demoCustomers) {
             // Ép gửi về email demo
             cust.email = 'quoclb23416@st.uel.edu.vn';
             
@@ -515,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else failCount++;
         }
 
-        showToast(`Đã gửi thành công thiệp sinh nhật cho ${successCount}/${targetCustomers.length} khách hàng!`);
+        showToast(`Đã gửi thành công 1 thiệp sinh nhật demo cho Tháng ${month}!`);
     };
 
     // Events for filters
