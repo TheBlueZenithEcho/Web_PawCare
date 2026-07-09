@@ -1,72 +1,78 @@
-# PawCare - Hệ Thống Phân Khúc Khách Hàng RFM & Tự Động Hóa
+# PawCare - RFM Customer Segmentation & Automation
 
-Dự án này là module **Phân khúc khách hàng RFM (Recency, Frequency, Monetary)** dành cho hệ sinh thái chăm sóc thú cưng **PawCare**. 
-Hệ thống kết hợp phân tích dữ liệu khách hàng, giao diện quản trị (Dashboard) trực quan và tự động hóa các chiến dịch Email Marketing thông qua n8n.
+Module Phân khúc khách hàng RFM (Recency, Frequency, Monetary) thuộc hệ sinh thái chăm sóc thú cưng **PawCare**. Hệ thống kết hợp phân tích dữ liệu Supabase, giao diện Dashboard trực quan và tự động hóa Email Marketing thông qua n8n.
 
 ---
 
 ## Tính Năng Cốt Lõi
 
-1. **Phân loại RFM Tự động:** Đánh giá khách hàng dựa trên 3 chỉ số Độ mới (R), Tần suất (F), và Doanh thu (M) để chia thành 5 phân khúc chuyên nghiệp:
-   - **VIP**
-   - **Thân Thiết**
-   - **Tiềm Năng**
-   - **Nguy Cơ**
-   - **Ngủ Đông**
+1. **Phân loại RFM Tự động:** Đánh giá khách hàng để chia thành 5 phân khúc:
+   - **VIP** (Mang lại giá trị cao nhất)
+   - **Thân Thiết** (Khách hàng trung thành)
+   - **Tiềm Năng** (Khách hàng mới/Có tiềm năng)
+   - **Nguy Cơ** (Có dấu hiệu rời bỏ)
+   - **Ngủ Đông** (Đã mất kết nối)
 2. **Dashboard Trực Quan:** Báo cáo tổng quan dạng Doughnut Chart và Bar Chart.
-3. **Gửi Email Hàng Loạt (Bulk Emailing):** Kích hoạt webhook gửi kịch bản Email cá nhân hóa (khuyến mãi, tri ân) cho từng phân khúc thông qua n8n.
-4. **Bảo mật & Tương thích:** Logo và email template được tối ưu hóa bằng hình ảnh Base64 chống chặn hiển thị trên các ứng dụng đọc mail.
+3. **Email Marketing Tự động:** Kích hoạt Webhook n8n để gửi kịch bản Email cá nhân hóa cho từng phân khúc (Tương thích tốt qua Serverless API).
+4. **Bảo mật & Tương thích:** Logo và template Email được tối ưu hóa bằng hình ảnh Base64 chống chặn hiển thị.
 
 ---
 
-## Cấu Trúc Thư Mục
+## Cấu Trúc Dự Án
 
 ```text
 D:\rfm_module\
-├── automations_n8n/         # Các workflows tự động hóa của n8n (.json)
+├── api/                     # Serverless Functions (dành cho Vercel)
+│   └── proxy.js             # API Proxy lách CORS để kết nối n8n
+├── automations_n8n/         # Workflows tự động hóa n8n (.json)
 │   ├── rfm_email_campaign_flow.json
 │   └── rfm_routing_flow.json
-├── logic/                   # Logic xử lý và tạo dữ liệu giả lập (Python)
+├── logic/                   # Logic Python xử lý và tạo Mock Data
 │   ├── generate_mock_data.py
-│   ├── simulate_email_demo.py
-│   └── simulate_webhook.py
-
-├── ui_rfm/                  # Giao diện Frontend Dashboard
+│   └── ...
+├── ui_rfm/                  # Frontend Dashboard (HTML/CSS/JS)
 │   ├── index.html
 │   ├── app.js
 │   └── style.css
-├── run_dashboard.py         # Script khởi chạy Local Web Server & CORS Proxy
-└── Bao_Cao_RFM_PawCare.doc  # Tài liệu báo cáo phân tích nghiệp vụ
+├── Bao_Cao_RFM_PawCare.doc  # Tài liệu báo cáo phân tích nghiệp vụ
+├── run_dashboard.py         # Script khởi chạy Local Web Server (Môi trường dev)
+└── vercel.json              # Cấu hình tự động Deploy lên Vercel
 ```
 
 ---
 
-## Hướng Dẫn Sử Dụng & Khởi Chạy
+## Hướng Dẫn Sử Dụng & Triển Khai
 
-### 1. Chuẩn bị Dữ liệu
-Dữ liệu tập khách hàng hiện tại đã được đồng bộ và tích hợp sẵn trên cơ sở dữ liệu **Supabase**. Hệ thống sẽ trực tiếp sử dụng tập dataset thực tế này.
-*(Tùy chọn: Nếu bạn cần tạo thêm dữ liệu giả lập để test nội bộ độc lập, bạn vẫn có thể chạy `python generate_mock_data.py` trong thư mục `logic`)*
+### 1. Dữ liệu (Supabase)
+Dữ liệu khách hàng đã được đồng bộ và tích hợp sẵn trên **Supabase**. Bảng điều khiển sẽ tự động trích xuất và tính toán thông qua API. 
+*(Nếu cần test nội bộ không dùng database, chạy `python generate_mock_data.py` trong thư mục `logic` để tạo dữ liệu giả lập).*
 
-### 2. Khởi chạy Giao diện Dashboard
-Hệ thống đi kèm một HTTP Server Python tích hợp sẵn proxy để xử lý CORS khi gọi Webhook n8n.
+### 2. Môi trường Phát triển (Local)
+Chạy lệnh sau tại thư mục gốc để mở Dashboard và kích hoạt Proxy nội bộ:
 ```bash
 python run_dashboard.py
 ```
 
-### 3. Tích hợp n8n Workflow
-- Mở [n8n](https://n8n.io/) của bạn.
-- Nhập (Import) các file JSON trong thư mục `automations_n8n/` vào hệ thống n8n.
-- Đảm bảo Webhook URL trong n8n khớp với cấu hình được trỏ tới ở file `app.js` (hoặc thông qua Proxy từ `run_dashboard.py`).
+### 3. Triển khai Đám mây (Vercel)
+Dự án đã được tích hợp sẵn cấu hình Vercel. Bạn có thể deploy trực tiếp bằng cách đẩy code lên GitHub và kết nối với Vercel, hoặc dùng lệnh:
+```bash
+npx vercel
+```
+*Lưu ý: API trung gian (Serverless) `/api/proxy` sẽ tự động hoạt động trên Vercel để kết nối Webhook n8n một cách bảo mật.*
+
+### 4. Tích hợp n8n Workflow
+- Mở [n8n](https://n8n.io/) và Import các file JSON trong thư mục `automations_n8n/`.
+- Thay thế Webhook URL của n8n vào ô cấu hình trên giao diện Dashboard.
 
 ---
 
-## Các Kịch Bản Email Marketing (Mẫu)
+## Kịch Bản Email Mẫu
 
-- **VIP:** Tri ân Khách hàng VIP - Tặng phần quà đặc biệt (Miễn phí 100% gói Spa Thư Giãn).
-- **Thân Thiết:** Ưu đãi giảm giá 20% gói Grooming & Spa toàn diện.
-- **Tiềm Năng:** Giới thiệu thêm các dịch vụ bổ trợ.
-- **Nguy Cơ:** Tặng Voucher 500.000đ áp dụng cho mọi dịch vụ để kích cầu quay lại.
-- **Ngủ Đông:** Giảm giá sốc 30% tất cả dịch vụ, kêu gọi tương tác.
+- **VIP:** Tri ân Khách hàng VIP - Tặng gói Spa Thư Giãn miễn phí.
+- **Thân Thiết:** Ưu đãi giữ chân - Giảm giá 20% gói Grooming.
+- **Tiềm Năng:** Giới thiệu thêm dịch vụ bổ trợ.
+- **Nguy Cơ:** Tặng Voucher 500k kích cầu quay lại.
+- **Ngủ Đông:** Giảm giá sốc 30% kêu gọi tương tác.
 
 ---
 
