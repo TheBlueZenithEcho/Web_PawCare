@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h1 style="color: #1C693D; font-size: 40px; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 1px; display: inline-block; vertical-align: middle;">
                 PawCare
             </h1>
-            <p style="color: #6b7280; font-size: 15px; margin-top: 12px; font-style: italic; font-weight: 500;">Hệ sinh thái chăm sóc thú cưng toàn diện</p>
+            <p style="color: #6b7280; font-size: 15px; margin-top: 12px; font-style: italic; font-weight: 500;">Nâng niu thú cưng cùng PawCare</p>
         </div>
         `;
 
