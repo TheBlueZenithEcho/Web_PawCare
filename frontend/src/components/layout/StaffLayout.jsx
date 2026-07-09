@@ -15,13 +15,18 @@ export default function StaffLayout({ children }) {
       const staff = await getStaffById('STF00002');
       if (staff) {
         setCurrentUser({
+          staff_id: staff.staff_id,
           full_name: `${staff.last_name} ${staff.first_name}`,
+          email: staff.email,
+          phone: staff.phone,
+          avatar_url: staff.avatar,
           role: staff.role === 'receptionist' ? 'Lễ tân' : 
                 staff.role === 'admin' ? 'Admin Master' :
                 staff.role === 'groomer' ? 'Groomer' :
                 staff.role === 'pet_sitter' ? 'Pet Sitter' :
                 staff.role === 'sales_staff' ? 'Nhân viên Sales' :
                 staff.role === 'warehouse_staff' ? 'Nhân viên Kho' : staff.role,
+          shift: 'Toàn thời gian', // Mặc định
         });
       }
     };
@@ -46,7 +51,11 @@ export default function StaffLayout({ children }) {
       <div className="w-full h-screen bg-fresh-grown flex flex-col relative overflow-hidden">
         
         {/* Global Header */}
-        <GlobalHeader onMenuClick={() => setIsSidebarOpen(true)} />
+        <GlobalHeader 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+          currentUser={currentUser} 
+          setCurrentUser={setCurrentUser} 
+        />
 
         {/* Mobile Overlay */}
         {isSidebarOpen && (
@@ -101,7 +110,10 @@ export default function StaffLayout({ children }) {
                 </div>
               </div>
               <button 
-                onClick={() => router.push('/staff/login')}
+                onClick={() => {
+                  localStorage.removeItem('staff_user');
+                  router.push('/login');
+                }}
                 title="Đăng xuất"
                 className="p-2 shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               >

@@ -17,12 +17,12 @@ INSERT INTO public.staff (staff_id, last_name, first_name, full_name, role, phon
 ('STAFF-001', '', '', 'Yến Ngân', 'Admin Master', '0901234567', 'yenngan.admin@pawcare.com', 'hash', NULL, 'Toàn thời gian', 'Đang hoạt động', NULL),
 ('STAFF-002', '', '', 'Nguyễn Văn A', 'Pet Sitter', '0987654321', 'nva@pawcare.com', 'hash', NULL, 'Ca Sáng (08:00 - 16:00)', 'Đang hoạt động', NULL) ON CONFLICT (staff_id) DO NOTHING;
 
-INSERT INTO public.customer (customer_id, last_name, first_name, phone, email, password_hash, is_account_activated, total_spent, created_at) VALUES
-('CUST-001', 'Nguyễn', 'Yến Ngân', '0901234567', 'yenngan@example.com', 'hash', true, 3500000, '2025-10-15'),
-('CUST-002', 'Lê Đức', 'Tuấn', '0912345678', 'tuanle@example.com', 'hash', true, 850000, '2026-01-20'),
-('CUST-003', 'Trần Ngọc', 'Mai', '0923456789', 'ngocmai@example.com', 'hash', false, 4200000, '2026-03-05'),
-('CUST-004', 'Phạm', 'Hùng', '0933333333', '', 'hash', false, 200000, '2026-06-25'),
-('CUST-005', 'Lê Hoàng', 'Vinh', '0911111111', 'hoangvinh@example.com', 'hash', true, 900000, '2026-06-20') ON CONFLICT (customer_id) DO NOTHING;
+INSERT INTO public.customer (customer_id, last_name, first_name, phone, email, password_hash, total_spent, created_at) VALUES
+('CUST-001', 'Nguyễn', 'Yến Ngân', '0901234567', 'yenngan@example.com', 'hash', 3500000, '2025-10-15'),
+('CUST-002', 'Lê Đức', 'Tuấn', '0912345678', 'tuanle@example.com', 'hash', 850000, '2026-01-20'),
+('CUST-003', 'Trần Ngọc', 'Mai', '0923456789', 'ngocmai@example.com', 'hash', 4200000, '2026-03-05'),
+('CUST-004', 'Phạm', 'Hùng', '0933333333', '', 'hash', 200000, '2026-06-25'),
+('CUST-005', 'Lê Hoàng', 'Vinh', '0911111111', 'hoangvinh@example.com', 'hash', 900000, '2026-06-20') ON CONFLICT (customer_id) DO NOTHING;
 
 INSERT INTO public.pet (pet_id, customer_id, pet_name, species, size, breed, weight, dob, gender, behavior_notes, allergy_notes, special_notes) VALUES
 ('P001', 'CUST-001', 'Bông', 'Chó', 'Small', 'Poodle', 3.2, '2023-05-10', 'Cái', 'Tăng động, quấn chủ', 'Dị ứng thịt gà', 'Hay sủa khi gặp người lạ'),

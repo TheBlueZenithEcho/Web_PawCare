@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 export default function UserProfileModal({ user, onClose, onSave }) {
   const fileInputRef = useRef(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || null);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     email: user?.email || '',
@@ -18,7 +19,7 @@ export default function UserProfileModal({ user, onClose, onSave }) {
     if (file) {
       const url = URL.createObjectURL(file);
       setAvatarPreview(url);
-      setFormData(prev => ({ ...prev, avatar_url: url }));
+      setAvatarFile(file);
     }
   };
 
@@ -33,10 +34,8 @@ export default function UserProfileModal({ user, onClose, onSave }) {
       toast.error('Vui lòng điền đầy đủ các thông tin bắt buộc.');
       return;
     }
-    // Giả lập lưu
-    onSave && onSave(formData);
-    toast.success('Cập nhật hồ sơ thành công!');
-    onClose();
+    onSave && onSave(formData, avatarFile);
+    toast.success('Cập nhật hồ sơ đang được xử lý...');
   };
 
   if (!user) return null;

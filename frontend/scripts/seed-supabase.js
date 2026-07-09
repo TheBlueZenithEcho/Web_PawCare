@@ -29,7 +29,7 @@ async function seed() {
 
   // 1. Seed Products
   try {
-    const products = parseExport(path.join(__dirname, '../data/products.js'));
+    const products = parseExport(path.join(__dirname, '../src/services/mock/mockProducts.js'));
     console.log(`Found ${products.length} products to seed.`);
     for (const p of products) {
       // Insert Product
@@ -91,7 +91,7 @@ async function seed() {
 
   // 2. Seed Services
   try {
-    const services = parseExport(path.join(__dirname, '../data/services.js'));
+    const services = parseExport(path.join(__dirname, '../src/services/mock/mockServices.js'));
     console.log(`Found ${services.length} services to seed.`);
     for (const s of services) {
       const srvData = {

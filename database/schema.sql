@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS public.customer (
     phone VARCHAR(20) UNIQUE,
     email VARCHAR(255),
     password_hash VARCHAR(255),
-    is_account_activated BOOLEAN DEFAULT true,
     total_spent DECIMAL(10,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

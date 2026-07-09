@@ -169,7 +169,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                     </button>
                   </div>
                 )}
-                {!customer.is_account_activated && (
+                {!customer.user_id && (
                   <div className="flex flex-col gap-2 relative">
                     <button
                       onClick={() => onOpenCreateAccount(customer)}

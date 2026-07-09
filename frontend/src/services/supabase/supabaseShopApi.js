@@ -198,3 +198,126 @@ export const updateOrderStatus = async (order_id, newStatus) => {
   if (error) throw error;
   return true;
 };
+
+// ── Cart API ─────────────────────────────────────────────────────────────────
+// Các hàm thao tác với bảng cart_item (dùng cho CartContext khi user đăng nhập)
+
+/**
+ * Lấy toàn bộ giỏ hàng của customer từ DB, kèm thông tin sản phẩm.
+ */
+export const fetchDbCart = async (customer_id) => {
+  const { data, error } = await supabase
+    .from('cart_item')
+    .select(`
+      cart_item_id,
+      variant_id,
+      quantity,
+      product_variant (
+        capacity_label,
+        price,
+        stock_quantity,
+        product (name, brand, product_image (image_url))
+      )
+    `)
+    .eq('customer_id', customer_id);
+
+  if (error) {
+    console.error('fetchDbCart error:', error);
+    return [];
+  }
+
+  return (data || []).map((item) => {
+    const variant = item.product_variant || {};
+    const product = variant.product || {};
+    const images = product.product_image || [];
+    return {
+      cart_item_id: item.cart_item_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      name: product.name || 'Sản phẩm',
+      brand: product.brand || 'Khác',
+      price: Number(variant.price) || 0,
+      image: images[0]?.image_url || 'https://placehold.co/400?text=No+Image',
+      capacity_label: variant.capacity_label || '',
+      stock_quantity: Number(variant.stock_quantity) || 0,
+    };
+  });
+};
+
+/**
+ * Thêm sản phẩm vào giỏ hàng DB.
+ * Nếu variant đã có trong giỏ → tăng số lượng.
+ */
+export const addDbCartItem = async (customer_id, variant_id, quantity = 1) => {
+  // Kiểm tra đã có item chưa
+  const { data: existing } = await supabase
+    .from('cart_item')
+    .select('cart_item_id, quantity')
+    .eq('customer_id', customer_id)
+    .eq('variant_id', variant_id)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('cart_item')
+      .update({ quantity: existing.quantity + quantity })
+      .eq('cart_item_id', existing.cart_item_id);
+    if (error) throw error;
+  } else {
+    const cart_item_id = `CI-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const { error } = await supabase
+      .from('cart_item')
+      .insert([{ cart_item_id, customer_id, variant_id, quantity }]);
+    if (error) throw error;
+  }
+};
+
+/**
+ * Cập nhật số lượng của 1 item trong giỏ hàng DB.
+ */
+export const updateDbCartItemQty = async (cart_item_id, quantity) => {
+  const { error } = await supabase
+    .from('cart_item')
+    .update({ quantity })
+    .eq('cart_item_id', cart_item_id);
+  if (error) throw error;
+};
+
+/**
+ * Xóa 1 item khỏi giỏ hàng DB.
+ */
+export const removeDbCartItem = async (cart_item_id) => {
+  const { error } = await supabase
+    .from('cart_item')
+    .delete()
+    .eq('cart_item_id', cart_item_id);
+  if (error) throw error;
+};
+
+/**
+ * Xóa toàn bộ giỏ hàng DB của customer.
+ */
+export const clearDbCartItems = async (customer_id) => {
+  const { error } = await supabase
+    .from('cart_item')
+    .delete()
+    .eq('customer_id', customer_id);
+  if (error) throw error;
+};
+
+/**
+ * Xóa các items được chọn (theo variant_id) khỏi giỏ hàng DB.
+ */
+export const removeSelectedDbCartItems = async (customer_id, variantIds) => {
+  if (!variantIds || variantIds.length === 0) return;
+  const { error } = await supabase
+    .from('cart_item')
+    .delete()
+    .eq('customer_id', customer_id)
+    .in('variant_id', variantIds);
+  if (error) throw error;
+};
+
+export const getOrCreateGuestCustomer = async (data) => { return { customer_id: 'GUEST-123' }; };
+export const createCustomerAddress = async (data) => { return { address_id: 'ADDR-123' }; };
+export const fetchCustomerAddresses = async (id) => { return []; };

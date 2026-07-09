@@ -1,5 +1,15 @@
 import { supabase } from './client';
 
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 // ==========================================
 // CUSTOMER API
 // ==========================================
@@ -308,6 +318,180 @@ export const deletePet = async (pet_id) => {
 };
 
 // ==========================================
+// AUTHENTICATION API
+// ==========================================
+
+/**
+ * FIXED: đã bỏ backdoor "password === 'hash'" từng cho phép đăng nhập vào BẤT KỲ
+ * tài khoản nào (customer lẫn staff) bằng cách gõ đúng chữ "hash" làm mật khẩu.
+ * Đây là lỗ hổng bảo mật nghiêm trọng — chỉ so khớp password_hash thật từ giờ.
+ *
+ * LƯU Ý CÒN LẠI (chưa xử lý trong lần sửa này): password_hash hiện đang lưu
+ * plaintext và so sánh trực tiếp (=== password), không hề hash. Muốn hash đúng
+ * cách cần xử lý phía server (Supabase Edge Function / Postgres function với
+ * pgcrypto hoặc bcrypt) vì hash+so khớp an toàn không nên làm ở client.
+ */
+export const authenticateCustomer = async (identifier, password) => {
+  const isEmail = identifier.includes('@');
+
+  if (isEmail) {
+    // 1. Check in staff table first (admins/staff use emails)
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('email', identifier)
+      .maybeSingle();
+
+    if (staffError) {
+      console.error('Error in staff query:', staffError);
+    }
+
+    if (staffData) {
+      if (staffData.password_hash === password) {
+        return { success: true, role: staffData.role, user: staffData };
+      } else {
+        return { success: false, error: 'Mật khẩu không chính xác.' };
+      }
+    }
+
+    // 2. Check in customer table by email
+    const { data: customerData, error: customerError } = await supabase
+      .from('customer')
+      .select('*')
+      .eq('email', identifier)
+      .maybeSingle();
+
+    if (customerError) {
+      console.error('Error in customer query by email:', customerError);
+    }
+
+    if (customerData) {
+      if (customerData.password_hash === password) {
+        return { success: true, role: 'Customer', user: customerData };
+      } else {
+        return { success: false, error: 'Mật khẩu không chính xác.' };
+      }
+    }
+  } else {
+    // 3. Check in customer table by phone
+    const { data: customerData, error: customerError } = await supabase
+      .from('customer')
+      .select('*')
+      .eq('phone', identifier)
+      .maybeSingle();
+
+    if (customerError) {
+      console.error('Error in customer query by phone:', customerError);
+    }
+
+    if (customerData) {
+      if (customerData.password_hash === password) {
+        return { success: true, role: 'Customer', user: customerData };
+      } else {
+        return { success: false, error: 'Mật khẩu không chính xác.' };
+      }
+    }
+
+    // 4. Check in staff table by phone
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('phone', identifier)
+      .maybeSingle();
+
+    if (staffError) {
+      console.error('Error in staff query by phone:', staffError);
+    }
+
+    if (staffData) {
+      if (staffData.password_hash === password) {
+        return { success: true, role: staffData.role, user: staffData };
+      } else {
+        return { success: false, error: 'Mật khẩu không chính xác.' };
+      }
+    }
+  }
+
+  return { success: false, error: 'Không tìm thấy tài khoản với số điện thoại hoặc email này.' };
+};
+
+/**
+ * FIXED: trước đây hàm này chỉ kiểm tra "SĐT đã tồn tại chưa" rồi chặn đăng ký
+ * nếu có — kể cả khi customer đó được NHÂN VIÊN tạo lúc walk-in/gọi điện và
+ * CHƯA từng có mật khẩu. Kết quả là khách đã từng đặt lịch qua điện thoại/tại quầy
+ * KHÔNG BAO GIỜ kích hoạt được tài khoản bằng đúng SĐT đó, trái với BR ở qtnv_new
+ * §5.1.2 ("khách có thể kích hoạt tài khoản qua link SMS để tự quản lý Pet Profile").
+ *
+ * Logic mới phân biệt rõ:
+ * 1. Có customer VÀ đã có password_hash -> thực sự trùng, chặn (đề nghị đăng nhập).
+ * 2. Có customer nhưng CHƯA có password_hash -> đây là bước "kích hoạt tài khoản":
+ *    gắn mật khẩu vào ĐÚNG customer_id đã có, không tạo customer_id mới, để giữ
+ *    nguyên toàn bộ lịch sử pet/booking cũ (đúng nguyên tắc "gom về cùng customer_id").
+ * 3. Chưa có customer nào -> tạo mới như cũ (khách tự đăng ký trước khi từng đặt lịch).
+ */
+export const registerCustomer = async (phone, password) => {
+  // 1. Tìm customer đã có theo SĐT (có thể do nhân viên tạo lúc walk-in/gọi điện).
+  const { data: existing, error: checkError } = await supabase
+    .from('customer')
+    .select('*')
+    .eq('phone', phone)
+    .maybeSingle();
+
+  if (checkError) {
+    console.error('Error checking existing customer:', checkError);
+    return { success: false, error: 'Đã xảy ra lỗi hệ thống khi kiểm tra tài khoản.' };
+  }
+
+  if (existing) {
+    // 2a. Đã có mật khẩu từ trước -> thực sự trùng, không cho đăng ký lại.
+    if (existing.password_hash) {
+      return { success: false, error: 'Số điện thoại này đã được đăng ký. Vui lòng đăng nhập.' };
+    }
+
+    // 2b. Customer đã tồn tại (do nhân viên tạo) nhưng chưa có mật khẩu
+    // -> kích hoạt tài khoản: gắn mật khẩu vào customer_id hiện có.
+    const { data, error } = await supabase
+      .from('customer')
+      .update({ password_hash: password })
+      .eq('customer_id', existing.customer_id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error activating existing customer:', error);
+      return { success: false, error: 'Đã xảy ra lỗi khi kích hoạt tài khoản.' };
+    }
+
+    return { success: true, customer: data, activated: true };
+  }
+
+  // 3. Hoàn toàn chưa có customer nào với SĐT này -> tạo mới.
+  const customer_id = `CUS${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+  const { data, error } = await supabase
+    .from('customer')
+    .insert([
+      {
+        customer_id,
+        phone,
+        password_hash: password,
+        first_name: '',
+        last_name: '',
+        user_id: generateUUID(),
+        total_spent: 0
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error registering customer:', error);
+    return { success: false, error: 'Đã xảy ra lỗi khi đăng ký tài khoản.' };
+  }
+
+  return { success: true, customer: data };
+};
+
+// ==========================================
 // STAFF API
 // ==========================================
 
@@ -321,6 +505,41 @@ export const getStaffById = async (staffId) => {
   if (error) {
     console.error('Error fetching staff:', error);
     return null;
+  }
+  return data;
+};
+
+export const uploadStaffAvatar = async (staff_id, file) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `staff/${staff_id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file);
+
+  if (uploadError) {
+    console.error('Error uploading staff avatar:', uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName);
+
+  return publicUrlData.publicUrl;
+};
+
+export const updateStaff = async (staff_id, updateData) => {
+  const { data, error } = await supabase
+    .from('staff')
+    .update(updateData)
+    .eq('staff_id', staff_id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating staff:', error);
+    throw error;
   }
   return data;
 };
