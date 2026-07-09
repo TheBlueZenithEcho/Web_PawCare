@@ -1,0 +1,128 @@
+{
+  "name": "RFM Automation - Send Emails",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rfm-trigger",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook RFM",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "rfm-trigger-uuid"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.new_segment }}",
+        "rules": {
+          "rules": [
+            { "value2": "Champions", "outputKey": "Champions" },
+            { "value2": "Loyal", "outputKey": "Loyal" },
+            { "value2": "Needs Attention", "outputKey": "Needs Attention" },
+            { "value2": "At Risk", "outputKey": "At Risk" },
+            { "value2": "Hibernating", "outputKey": "Hibernating" }
+          ]
+        }
+      },
+      "id": "node-switch",
+      "name": "Route by Segment",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.body.to_email }}",
+        "subject": "={{ $json.body.subject }}",
+        "message": "={{ $json.body.custom_message }}",
+        "appendAttribution": false
+      },
+      "id": "node-gmail-champions",
+      "name": "Gmail Champions",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [600, 100]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.body.to_email }}",
+        "subject": "={{ $json.body.subject }}",
+        "message": "={{ $json.body.custom_message }}",
+        "appendAttribution": false
+      },
+      "id": "node-gmail-loyal",
+      "name": "Gmail Loyal",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [600, 250]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.body.to_email }}",
+        "subject": "={{ $json.body.subject }}",
+        "message": "={{ $json.body.custom_message }}",
+        "appendAttribution": false
+      },
+      "id": "node-gmail-needs-attention",
+      "name": "Gmail Needs Attention",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [600, 400]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.body.to_email }}",
+        "subject": "={{ $json.body.subject }}",
+        "message": "={{ $json.body.custom_message }}",
+        "appendAttribution": false
+      },
+      "id": "node-gmail-at-risk",
+      "name": "Gmail At Risk",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [600, 550]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.body.to_email }}",
+        "subject": "={{ $json.body.subject }}",
+        "message": "={{ $json.body.custom_message }}",
+        "appendAttribution": false
+      },
+      "id": "node-gmail-hibernating",
+      "name": "Gmail Hibernating",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [600, 700]
+    }
+  ],
+  "connections": {
+    "Webhook RFM": { "main": [ [ { "node": "Route by Segment", "type": "main", "index": 0 } ] ] },
+    "Route by Segment": {
+      "main": [
+        [ { "node": "Gmail Champions", "type": "main", "index": 0 } ],
+        [ { "node": "Gmail Loyal", "type": "main", "index": 0 } ],
+        [ { "node": "Gmail Needs Attention", "type": "main", "index": 0 } ],
+        [ { "node": "Gmail At Risk", "type": "main", "index": 0 } ],
+        [ { "node": "Gmail Hibernating", "type": "main", "index": 0 } ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

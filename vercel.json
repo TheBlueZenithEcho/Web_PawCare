@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/ui_rfm/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/ui_rfm/$1"
+    }
+  ]
+}

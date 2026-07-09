@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawCare - Phân Khúc Khách Hàng RFM</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-paw"></i>
+                <span>PawCare</span>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-title">CHỨC NĂNG HỆ THỐNG</div>
+                <ul class="menu-list">
+                    <li><i class="fa-regular fa-circle-user"></i> Tài khoản & Hồ sơ</li>
+                    <li><i class="fa-regular fa-calendar-check"></i> Tiếp nhận & Đặt lịch</li>
+                    <li><i class="fa-solid fa-bed"></i> Lưu trú</li>
+                    <li><i class="fa-solid fa-scissors"></i> Grooming/Spa</li>
+                    <li><i class="fa-solid fa-store"></i> Cửa hàng</li>
+                    <li><i class="fa-solid fa-truck-fast"></i> Kho & Giao hàng</li>
+                    <li><i class="fa-solid fa-truck-medical"></i> Khẩn cấp & Ngoại lệ</li>
+                </ul>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">QUẢN TRỊ HỆ THỐNG</div>
+                <ul class="menu-list">
+                    <li><i class="fa-solid fa-chart-line"></i> Dashboard Doanh số</li>
+                    <li><i class="fa-regular fa-calendar-days"></i> Lịch trình tổng</li>
+                    <li><i class="fa-solid fa-box"></i> Quản lý Kho</li>
+                    <li><i class="fa-solid fa-users-gear"></i> Quản lý Người dùng</li>
+                    <li><i class="fa-solid fa-triangle-exclamation"></i> Tiếp nhận sự cố</li>
+                    <li class="active"><i class="fa-solid fa-bullseye"></i> Phân khúc RFM</li>
+                    <li><i class="fa-solid fa-gear"></i> Cấu hình hệ thống</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <ul class="menu-list">
+                    <li><i class="fa-regular fa-circle-question"></i> Trợ giúp</li>
+                    <li><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Tìm kiếm khách hàng, thú cưng, hóa đơn...">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="webhook-config">
+                        <i class="fa-solid fa-link"></i>
+                        <input type="text" id="webhook-url" placeholder="Dán Webhook URL của n8n vào đây..." value="https://qlooooo.app.n8n.cloud/webhook/rfm-trigger">
+                    </div>
+                    <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
+                    <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                    <div class="user-avatar">QL</div>
+                </div>
+            </header>
+
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>Phân khúc RFM</h1>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon-box bg-yellow-light">
+                            <i class="fa-regular fa-clipboard"></i>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">Tổng khách hàng</div>
+                            <div class="metric-value" id="total-customers">0</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon-box bg-green-light">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">VIP</div>
+                            <div class="metric-value" id="champions-count">0</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon-box bg-green-solid">
+                            <i class="fa-regular fa-circle-check"></i>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">Thân Thiết</div>
+                            <div class="metric-value" id="loyal-count">0</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon-box bg-red-light">
+                            <i class="fa-solid fa-exclamation"></i>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">Nguy Cơ</div>
+                            <div class="metric-value" id="atrisk-count">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Charts Row -->
+                <div class="middle-row">
+                    <div class="panel flex-1">
+                        <div class="panel-header">
+                            <h3>Tỷ Lệ Phân Khúc</h3>
+                            <div class="panel-tools">
+                                <i class="fa-solid fa-download"></i>
+                                <i class="fa-solid fa-filter"></i>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="rfmDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="panel flex-2">
+                        <div class="panel-header">
+                            <h3>Phân Bổ Doanh Thu</h3>
+                            <div class="panel-tools">
+                                <i class="fa-solid fa-download"></i>
+                                <i class="fa-solid fa-filter"></i>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="rfmBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Panel -->
+                <div class="panel table-panel">
+                    <div class="panel-header border-bottom">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label>SẮP XẾP THEO</label>
+                                <select id="filter-sort">
+                                    <option value="default">Mặc định (RFM)</option>
+                                    <option value="monetary_desc">Tổng tiền giảm dần</option>
+                                    <option value="frequency_desc">Số lần đến giảm dần</option>
+                                    <option value="recency_asc">Mới đến gần đây</option>
+                                </select>
+                            </div>
+                            <div class="filter-group ml-4">
+                                <label>PHÂN KHÚC</label>
+                                <select id="filter-segment" class="form-select">
+                                    <option value="all">Tất cả phân khúc</option>
+                                    <option value="Champions">VIP</option>
+                                    <option value="Loyal">Thân Thiết</option>
+                                    <option value="Needs Attention">Tiềm Năng</option>
+                                    <option value="At Risk">Nguy Cơ</option>
+                                    <option value="Hibernating">Ngủ Đông</option>
+                                </select>
+                            </div>
+                            <button id="btn-send-segment" class="btn btn-primary ml-4" style="background-color: #2F3E32; color: #fff;" onclick="openBulkModal()">
+                                <i class="fas fa-paper-plane mr-2"></i> Gửi cho phân khúc này
+                            </button>
+                        </div>
+                        <div class="panel-tools">
+                            <button class="btn-icon-outline"><i class="fa-solid fa-download"></i></button>
+                            <button class="btn-icon-outline"><i class="fa-solid fa-filter"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã KH</th>
+                                    <th>Thông tin Khách hàng</th>
+                                    <th>Phân Khúc</th>
+                                    <th>Điểm RFM</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-table-body">
+                                <tr><td colspan="5" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination">
+                        <div class="page-info">Hiển thị <span id="display-count">0</span> trên <span id="total-count">0</span> khách hàng</div>
+                        <div class="page-controls">
+                            <button class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toast-message">Gửi webhook thành công!</span>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="email-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Tùy chỉnh nội dung Email</h2>
+                <button class="modal-close" onclick="closeEmailModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Địa chỉ Email nhận:</label>
+                    <input type="email" id="modal-email-to" class="form-control" placeholder="Ví dụ: uyen0916@gmail.com" value="uyen0916@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Nội dung thông điệp:</label>
+                    <textarea id="modal-email-message" class="form-control" placeholder="Nhập lời nhắn..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEmailModal()">Hủy</button>
+                <button class="btn-primary" onclick="confirmSendEmail()">
+                    <i class="fa-solid fa-paper-plane"></i> Xác nhận Gửi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+    <!-- BULK EMAIL MODAL -->
+    <div id="bulk-email-modal" class="modal-overlay hidden">
+        <div class="modal-container" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Gửi Email Theo Phân Khúc</h2>
+                <button class="modal-close" onclick="closeBulkModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Gửi cho Đối tượng (Phân khúc)</label>
+                    <select id="bulk-segment-select" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #d1d5db;">
+                        <option value="Champions">VIP</option>
+                        <option value="Loyal">Thân Thiết</option>
+                        <option value="Needs Attention">Tiềm Năng</option>
+                        <option value="At Risk">Nguy Cơ</option>
+                        <option value="Hibernating">Ngủ Đông</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tổng số người nhận dự kiến: <strong id="bulk-count" style="color: var(--primary-green);">0</strong> khách hàng</label>
+                </div>
+                <div class="form-group">
+                    <label>Nội dung mẫu (Biến {name} sẽ được tự động đổi thành tên khách hàng)</label>
+                    <textarea id="bulk-email-message" class="form-control" rows="8"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeBulkModal()">Hủy bỏ</button>
+                <button class="btn-primary" onclick="confirmBulkSend()">
+                    <i class="fa-solid fa-paper-plane"></i> Xác nhận gửi loạt
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

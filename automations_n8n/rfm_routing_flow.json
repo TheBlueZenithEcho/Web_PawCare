@@ -1,0 +1,63 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rfm-trigger",
+        "options": {}
+      },
+      "id": "e3a4b6c9-1234-4a21-9d10-8b1f1a56249a",
+      "name": "Webhook RFM",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "rfm-trigger-uuid"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.new_segment }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "Champions",
+              "outputKey": "Champions"
+            },
+            {
+              "value2": "At Risk",
+              "outputKey": "At Risk"
+            },
+            {
+              "value2": "Needs Attention",
+              "outputKey": "Needs Attention"
+            }
+          ]
+        }
+      },
+      "id": "9b1c2d3e-5678-4f32-8a90-1c2d3e4f5g6h",
+      "name": "Route by Segment",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook RFM": {
+      "main": [
+        [
+          {
+            "node": "Route by Segment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

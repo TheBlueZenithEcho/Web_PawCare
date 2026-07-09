@@ -1,0 +1,14 @@
+{
+  "customer_id": "CUS00123",
+  "phone": "0901234567",
+  "name": "Nguyen Van A",
+  "old_segment": "Loyal",
+  "new_segment": "Champions",
+  "rfm_scores": {
+    "R": 5,
+    "F": 5,
+    "M": 5
+  },
+  "trigger_event": "segment_upgrade",
+  "timestamp": "2026-07-09T22:49:08Z"
+}
