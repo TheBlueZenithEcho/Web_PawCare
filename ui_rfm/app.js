@@ -422,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let cust of demoCustomers) {
             // Ép gửi về email demo để không bị spam lung tung
             cust.email = 'quoclb23416@st.uel.edu.vn';
-            cust.name = 'Quốc (Demo)';
             
             const customMessage = templateMessage.replace(/{name}/g, cust.name);
             let formattedMessage = generateEmailHTML(customMessage);
