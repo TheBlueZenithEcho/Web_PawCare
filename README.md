@@ -1,6 +1,6 @@
 # PawCare - RFM Customer Segmentation & Automation
 
-Module Phân khúc khách hàng RFM (Recency, Frequency, Monetary) thuộc hệ sinh thái chăm sóc thú cưng **PawCare**. Hệ thống kết hợp phân tích dữ liệu Supabase, giao diện Dashboard trực quan và tự động hóa Email Marketing thông qua n8n.
+Module Phân khúc khách hàng theo mô hình RFM thuộc hệ sinh thái chăm sóc thú cưng **PawCare**. Hệ thống kết hợp phân tích dữ liệu Supabase, giao diện Dashboard trực quan và tự động hóa Email Marketing thông qua n8n.
 
 ---
 
@@ -9,7 +9,7 @@ Module Phân khúc khách hàng RFM (Recency, Frequency, Monetary) thuộc hệ 
 1. **Phân loại RFM Tự động:** Đánh giá khách hàng để chia thành 5 phân khúc:
    - **VIP** (Mang lại giá trị cao nhất)
    - **Thân Thiết** (Khách hàng trung thành)
-   - **Tiềm Năng** (Khách hàng mới/Có tiềm năng)
+   - **Tiềm Năng** (Khách hàng mới hoặc có tiềm năng)
    - **Nguy Cơ** (Có dấu hiệu rời bỏ)
    - **Ngủ Đông** (Đã mất kết nối)
 2. **Dashboard Trực Quan:** Báo cáo tổng quan dạng Doughnut Chart và Bar Chart.
@@ -22,43 +22,42 @@ Module Phân khúc khách hàng RFM (Recency, Frequency, Monetary) thuộc hệ 
 
 ```text
 D:\rfm_module\
-├── api/                     # Serverless Functions (dành cho Vercel)
-│   └── proxy.js             # API Proxy lách CORS để kết nối n8n
-├── automations_n8n/         # Workflows tự động hóa n8n (.json)
+├── api/                     # Serverless Functions cho nền tảng Vercel
+├── automations_n8n/         # Workflows tự động hóa n8n .json
 │   ├── rfm_email_campaign_flow.json
 │   └── rfm_routing_flow.json
-├── logic/                   # Logic Python xử lý và tạo Mock Data
+├── logic/                   # Logic xử lý và tạo dữ liệu mẫu
 │   ├── generate_mock_data.py
 │   └── ...
-├── ui_rfm/                  # Frontend Dashboard (HTML/CSS/JS)
+├── ui_rfm/                  # Giao diện quản trị Dashboard
 │   ├── index.html
 │   ├── app.js
 │   └── style.css
 ├── Bao_Cao_RFM_PawCare.doc  # Tài liệu báo cáo phân tích nghiệp vụ
-├── run_dashboard.py         # Script khởi chạy Local Web Server (Môi trường dev)
-└── vercel.json              # Cấu hình tự động Deploy lên Vercel
+├── run_dashboard.py         # Script khởi chạy máy chủ phát triển cục bộ
+└── vercel.json              # Cấu hình tự động triển khai lên Vercel
 ```
 
 ---
 
 ## Hướng Dẫn Sử Dụng & Triển Khai
 
-### 1. Dữ liệu (Supabase)
+### 1. Cơ sở dữ liệu Supabase
 Dữ liệu khách hàng đã được đồng bộ và tích hợp sẵn trên **Supabase**. Bảng điều khiển sẽ tự động trích xuất và tính toán thông qua API. 
-*(Nếu cần test nội bộ không dùng database, chạy `python generate_mock_data.py` trong thư mục `logic` để tạo dữ liệu giả lập).*
+*(Nếu cần test nội bộ không dùng database, chạy lệnh `python generate_mock_data.py` trong thư mục `logic` để tạo dữ liệu giả lập).*
 
-### 2. Môi trường Phát triển (Local)
+### 2. Môi trường phát triển cục bộ
 Chạy lệnh sau tại thư mục gốc để mở Dashboard và kích hoạt Proxy nội bộ:
 ```bash
 python run_dashboard.py
 ```
 
-### 3. Triển khai Đám mây (Vercel)
+### 3. Triển khai máy chủ đám mây Vercel
 Dự án đã được tích hợp sẵn cấu hình Vercel. Bạn có thể deploy trực tiếp bằng cách đẩy code lên GitHub và kết nối với Vercel, hoặc dùng lệnh:
 ```bash
 npx vercel
 ```
-*Lưu ý: API trung gian (Serverless) `/api/proxy` sẽ tự động hoạt động trên Vercel để kết nối Webhook n8n một cách bảo mật.*
+*Lưu ý: API trung gian Serverless `/api/proxy` sẽ tự động hoạt động trên Vercel để kết nối Webhook n8n một cách bảo mật.*
 
 ### 4. Tích hợp n8n Workflow
 - Mở [n8n](https://n8n.io/) và Import các file JSON trong thư mục `automations_n8n/`.
