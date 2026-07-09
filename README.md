@@ -23,17 +23,19 @@ Module Phân khúc khách hàng theo mô hình RFM thuộc hệ sinh thái chăm
 ```text
 D:\rfm_module\
 ├── api/                     # Serverless Functions cho nền tảng Vercel
+│   └── proxy.js
 ├── automations_n8n/         # Workflows tự động hóa n8n .json
 │   ├── rfm_email_campaign_flow.json
-│   └── rfm_routing_flow.json
-├── logic/                   # Logic xử lý và tạo dữ liệu mẫu
+│   ├── rfm_routing_flow.json
+│   └── webhook_payload_sample.json
+├── logic/                   # Logic Python xử lý thuật toán RFM & Mock Data
 │   ├── generate_mock_data.py
+│   ├── rfm_engine.py
 │   └── ...
 ├── ui_rfm/                  # Giao diện quản trị Dashboard
 │   ├── index.html
 │   ├── app.js
 │   └── style.css
-├── Bao_Cao_RFM_PawCare.doc  # Tài liệu báo cáo phân tích nghiệp vụ
 ├── run_dashboard.py         # Script khởi chạy máy chủ phát triển cục bộ
 └── vercel.json              # Cấu hình tự động triển khai lên Vercel
 ```

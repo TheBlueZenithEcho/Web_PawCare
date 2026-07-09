@@ -39,6 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { toast.className = 'toast hidden'; }, 3000);
     }
 
+    async function sendWebhookPayload(url, payload) {
+        try {
+            const response = await fetch('/api/proxy', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ targetUrl: url, payload: payload })
+            });
+            return response.ok;
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    }
+
     const messageTemplates = {
         'Champions': "Chào bạn {name},\n\nCảm ơn bạn đã luôn tin tưởng và lựa chọn PawCare là người bạn đồng hành trong việc chăm sóc thú cưng. Sự ủng hộ nhiệt tình của bạn chính là động lực to lớn giúp PawCare ngày càng hoàn thiện hơn.\n\nNhằm tri ân khách hàng thân thiết, PawCare xin gửi tặng bé cưng một phần quà đặc biệt: Miễn phí 100% gói Spa Thư Giãn cho lần ghé thăm tiếp theo.\n\nRất mong sớm được gặp lại bạn và bé tại cửa hàng!\n\nTrân trọng,\nĐội ngũ chăm sóc khách hàng VIP PawCare",
         'Loyal': "Chào bạn {name},\n\nPawCare vô cùng trân trọng sự gắn bó của bạn và bé cưng trong suốt thời gian qua. Để đáp lại tình cảm đó, chúng tôi dành tặng riêng cho bạn ưu đãi giảm giá 20% cho gói Grooming & Spa toàn diện.\n\nHãy đưa bé đến PawCare để bé được tận hưởng dịch vụ tắm gội, cắt tỉa lông chuyên nghiệp nhất. Đảm bảo bé sẽ vô cùng thích thú và xinh đẹp khi trở về nhà.\n\nTrân trọng,\nĐội ngũ PawCare",
@@ -349,21 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
             "trigger_event": "manual_trigger"
         };
 
-        try {
-            const response = await fetch('/api/proxy', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ targetUrl: url, payload: payload })
-            });
-
-            if(response.ok) {
-                showToast(`Gửi Email thành công tới ${cust.name}!`);
-            } else {
-                showToast(`Lỗi gửi: ${response.status}`, true);
-            }
-        } catch (error) {
-            console.error(error);
-            showToast("Không thể gửi. Kiểm tra URL n8n.", true);
+        const success = await sendWebhookPayload(url, payload);
+        if(success) {
+            showToast(`Gửi Email thành công tới ${cust.name}!`);
+        } else {
+            showToast("Lỗi khi gửi qua Webhook. Kiểm tra API n8n.", true);
         }
     };
 
@@ -437,17 +441,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 "trigger_event": "bulk_trigger"
             };
 
-            try {
-                const response = await fetch('/api/proxy', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ targetUrl: url, payload: payload })
-                });
-                if(response.ok) successCount++;
-                else failCount++;
-            } catch (err) {
-                failCount++;
-            }
+            const success = await sendWebhookPayload(url, payload);
+            if(success) successCount++;
+            else failCount++;
         }
 
         showToast(`Đã gửi thành công ${successCount}/${targetCustomers.length} emails!`);
@@ -515,17 +511,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 "trigger_event": "birthday_trigger"
             };
 
-            try {
-                const response = await fetch('/api/proxy', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ targetUrl: url, payload: payload })
-                });
-                if(response.ok) successCount++;
-                else failCount++;
-            } catch (err) {
-                failCount++;
-            }
+            const success = await sendWebhookPayload(url, payload);
+            if(success) successCount++;
+            else failCount++;
         }
 
         showToast(`Đã gửi thành công thiệp sinh nhật cho ${successCount}/${targetCustomers.length} khách hàng!`);
