@@ -645,8 +645,8 @@ body {
 
 textarea.form-control {
     resize: vertical;
-    min-height: 250px;
-    height: 250px;
+    min-height: 400px;
+    height: 400px;
 }
 
 .modal-footer {
