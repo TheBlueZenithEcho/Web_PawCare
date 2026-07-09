@@ -423,10 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let failCount = 0;
 
         for (let cust of targetCustomers) {
-            if(!cust.email) {
-                // If they don't have an email in DB, use default for demo
-                cust.email = 'uyen0916@gmail.com'; 
-            }
+            // Ép gửi về email demo để không bị spam lung tung
+            cust.email = 'quoclb23416@st.uel.edu.vn';
             
             const customMessage = templateMessage.replace(/{name}/g, cust.name);
             let formattedMessage = generateEmailHTML(customMessage);
@@ -496,7 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let failCount = 0;
 
         for (let cust of targetCustomers) {
-            if(!cust.email) cust.email = 'uyen0916@gmail.com'; 
+            // Ép gửi về email demo
+            cust.email = 'quoclb23416@st.uel.edu.vn';
             
             const customMessage = templateMessage.replace(/{name}/g, cust.name);
             let formattedMessage = generateEmailHTML(customMessage);
