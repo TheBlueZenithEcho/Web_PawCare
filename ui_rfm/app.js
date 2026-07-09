@@ -20,12 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bulkCount = document.getElementById('bulk-count');
     const bulkEmailMessage = document.getElementById('bulk-email-message');
 
-    // Birthday Modal elements
-    const birthdayModal = document.getElementById('birthday-modal');
-    const birthdayMonthSelect = document.getElementById('birthday-month-select');
-    const birthdayCount = document.getElementById('birthday-count');
-    const birthdayMessage = document.getElementById('birthday-message');
-
     // Filters
     const filterSort = document.getElementById('filter-sort');
     const filterSegment = document.getElementById('filter-segment');
@@ -163,8 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: c.email,
                     recent_date: null,
                     frequency: 0,
-                    monetary: 0,
-                    birth_month: Math.floor(Math.random() * 12) + 1
+                    monetary: 0
                 };
             });
 
@@ -450,82 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`Đã gửi thành công 1 email demo cho nhóm ${seg}!`);
-    };
-
-    // --- BIRTHDAY LOGIC ---
-    window.openBirthdayModal = function() {
-        const currentMonth = new Date().getMonth() + 1;
-        birthdayMonthSelect.value = currentMonth;
-        window.updateBirthdayCount();
-        birthdayModal.classList.add('show');
-        birthdayModal.classList.remove('hidden');
-    };
-
-    window.closeBirthdayModal = function() {
-        birthdayModal.classList.remove('show');
-        setTimeout(() => { birthdayModal.classList.add('hidden'); }, 300);
-    };
-
-    window.updateBirthdayCount = function() {
-        const month = parseInt(birthdayMonthSelect.value);
-        const count = mergedData.filter(c => c.birth_month === month).length;
-        birthdayCount.innerText = count;
-    };
-
-    window.confirmBirthdaySend = async function() {
-        const url = webhookInput.value.trim();
-        if(!url) {
-            showToast("Vui lòng nhập Webhook URL", true);
-            return;
-        }
-
-        const month = parseInt(birthdayMonthSelect.value);
-        const templateMessage = birthdayMessage.value.trim();
-        const targetCustomers = mergedData.filter(c => c.birth_month === month);
-
-        if(targetCustomers.length === 0) {
-            showToast(`Không có khách hàng nào sinh nhật trong Tháng ${month}`, true);
-            return;
-        }
-        if(!templateMessage) {
-            showToast("Vui lòng nhập nội dung mẫu", true);
-            return;
-        }
-
-        // Chọn ngẫu nhiên 1 khách hàng sinh nhật trong tháng để gửi demo
-        const randomCustomer = targetCustomers[Math.floor(Math.random() * targetCustomers.length)];
-        const demoCustomers = [randomCustomer];
-
-        closeBirthdayModal();
-        showToast(`Đang gửi 1 thiệp sinh nhật demo (Tháng ${month})...`);
-
-        let successCount = 0;
-        let failCount = 0;
-
-        for (let cust of demoCustomers) {
-            // Ép gửi về email demo
-            cust.email = 'quoclb23416@st.uel.edu.vn';
-            cust.name = 'Quốc (Demo)';
-            
-            const customMessage = templateMessage.replace(/{name}/g, cust.name);
-            let formattedMessage = generateEmailHTML(customMessage);
-
-            const payload = {
-                "customer_id": cust.customer_id,
-                "name": cust.name,
-                "new_segment": cust.Segment,
-                "to_email": cust.email,
-                "subject": "Chúc mừng Sinh nhật từ PawCare! 🎂",
-                "custom_message": formattedMessage,
-                "trigger_event": "birthday_trigger"
-            };
-
-            const success = await sendWebhookPayload(url, payload);
-            if(success) successCount++;
-            else failCount++;
-        }
-
-        showToast(`Đã gửi thành công 1 thiệp sinh nhật demo cho Tháng ${month}!`);
     };
 
     // Events for filters
