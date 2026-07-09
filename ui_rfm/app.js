@@ -460,6 +460,68 @@ document.addEventListener('DOMContentLoaded', () => {
         filterSearchEl.addEventListener('input', renderTable);
     }
 
+    // Custom Select Initialization
+    document.querySelectorAll('select').forEach(select => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        if (select.id === 'bulk-segment-select') wrapper.style.width = '100%';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+        select.style.display = 'none';
+
+        const trigger = document.createElement('div');
+        trigger.className = 'custom-select-trigger';
+        const triggerText = document.createElement('span');
+        triggerText.textContent = select.options[select.selectedIndex].text;
+        trigger.appendChild(triggerText);
+        
+        const arrow = document.createElement('i');
+        arrow.className = 'fa-solid fa-chevron-down custom-select-arrow';
+        trigger.appendChild(arrow);
+        wrapper.appendChild(trigger);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'custom-select-options';
+        
+        Array.from(select.options).forEach((opt, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'custom-select-option';
+            if (index === select.selectedIndex) optionDiv.classList.add('selected');
+            optionDiv.textContent = opt.text;
+            optionDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                select.selectedIndex = index;
+                triggerText.textContent = opt.text;
+                optionsDiv.querySelectorAll('.custom-select-option').forEach(el => el.classList.remove('selected'));
+                optionDiv.classList.add('selected');
+                wrapper.classList.remove('open');
+                select.dispatchEvent(new Event('change'));
+            });
+            optionsDiv.appendChild(optionDiv);
+        });
+        
+        wrapper.appendChild(optionsDiv);
+
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-select-wrapper').forEach(el => {
+                if (el !== wrapper) el.classList.remove('open');
+            });
+            wrapper.classList.toggle('open');
+        });
+        
+        select.addEventListener('change', () => {
+            triggerText.textContent = select.options[select.selectedIndex].text;
+            optionsDiv.querySelectorAll('.custom-select-option').forEach((el, idx) => {
+                el.classList.toggle('selected', idx === select.selectedIndex);
+            });
+        });
+    });
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.custom-select-wrapper').forEach(el => el.classList.remove('open'));
+    });
+
     // Run
     initApp();
 });

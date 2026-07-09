@@ -63,7 +63,7 @@ npx vercel
 
 ### 4. Tích hợp n8n Workflow
 - Mở [n8n](https://n8n.io/) và Import các file JSON trong thư mục `automations_n8n/`.
-- Thay thế Webhook URL của n8n vào ô cấu hình trên giao diện Dashboard.
+- Cấu hình URL Webhook trực tiếp trong mã nguồn `ui_rfm/index.html` (thẻ input ẩn) nếu bạn triển khai instance n8n riêng biệt.
 
 ---
 
