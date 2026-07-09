@@ -16,6 +16,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Bypass-Tunnel-Reminder': 'true'
             },
             body: JSON.stringify(payload)
         });

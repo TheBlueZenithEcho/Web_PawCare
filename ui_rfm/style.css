@@ -576,7 +576,8 @@ body {
 
 .modal-container {
     background: #fff;
-    width: 450px;
+    width: 800px;
+    max-width: 90vw;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     transform: translateY(20px);
