@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const bulkCount = document.getElementById('bulk-count');
     const bulkEmailMessage = document.getElementById('bulk-email-message');
 
+    // Birthday Modal elements
+    const birthdayModal = document.getElementById('birthday-modal');
+    const birthdayMonthSelect = document.getElementById('birthday-month-select');
+    const birthdayCount = document.getElementById('birthday-count');
+    const birthdayMessage = document.getElementById('birthday-message');
+
     // Filters
     const filterSort = document.getElementById('filter-sort');
     const filterSegment = document.getElementById('filter-segment');
@@ -143,7 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: c.email,
                     recent_date: null,
                     frequency: 0,
-                    monetary: 0
+                    monetary: 0,
+                    birth_month: Math.floor(Math.random() * 12) + 1
                 };
             });
 
@@ -444,6 +451,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`Đã gửi thành công ${successCount}/${targetCustomers.length} emails!`);
+    };
+
+    // --- BIRTHDAY LOGIC ---
+    window.openBirthdayModal = function() {
+        const currentMonth = new Date().getMonth() + 1;
+        birthdayMonthSelect.value = currentMonth;
+        window.updateBirthdayCount();
+        birthdayModal.classList.add('show');
+        birthdayModal.classList.remove('hidden');
+    };
+
+    window.closeBirthdayModal = function() {
+        birthdayModal.classList.remove('show');
+        setTimeout(() => { birthdayModal.classList.add('hidden'); }, 300);
+    };
+
+    window.updateBirthdayCount = function() {
+        const month = parseInt(birthdayMonthSelect.value);
+        const count = mergedData.filter(c => c.birth_month === month).length;
+        birthdayCount.innerText = count;
+    };
+
+    window.confirmBirthdaySend = async function() {
+        const url = webhookInput.value.trim();
+        if(!url) {
+            showToast("Vui lòng nhập Webhook URL", true);
+            return;
+        }
+
+        const month = parseInt(birthdayMonthSelect.value);
+        const templateMessage = birthdayMessage.value.trim();
+        const targetCustomers = mergedData.filter(c => c.birth_month === month);
+
+        if(targetCustomers.length === 0) {
+            showToast(`Không có khách hàng nào sinh nhật trong Tháng ${month}`, true);
+            return;
+        }
+        if(!templateMessage) {
+            showToast("Vui lòng nhập nội dung mẫu", true);
+            return;
+        }
+
+        closeBirthdayModal();
+        showToast(`Đang gửi loạt ${targetCustomers.length} thiệp sinh nhật (Tháng ${month})...`);
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (let cust of targetCustomers) {
+            if(!cust.email) cust.email = 'uyen0916@gmail.com'; 
+            
+            const customMessage = templateMessage.replace(/{name}/g, cust.name);
+            let formattedMessage = generateEmailHTML(customMessage);
+
+            const payload = {
+                "customer_id": cust.customer_id,
+                "name": cust.name,
+                "new_segment": cust.Segment,
+                "to_email": cust.email,
+                "subject": "Chúc mừng Sinh nhật từ PawCare! 🎂",
+                "custom_message": formattedMessage,
+                "trigger_event": "birthday_trigger"
+            };
+
+            try {
+                const response = await fetch('/api/proxy', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ targetUrl: url, payload: payload })
+                });
+                if(response.ok) successCount++;
+                else failCount++;
+            } catch (err) {
+                failCount++;
+            }
+        }
+
+        showToast(`Đã gửi thành công thiệp sinh nhật cho ${successCount}/${targetCustomers.length} khách hàng!`);
     };
 
     // Events for filters
