@@ -7,11 +7,11 @@ Module Phân khúc khách hàng theo mô hình RFM thuộc hệ sinh thái chăm
 ## Tính Năng Cốt Lõi
 
 1. **Phân loại RFM Tự động:** Đánh giá khách hàng để chia thành 5 phân khúc:
-   - **VIP** (Mang lại giá trị cao nhất)
-   - **Thân Thiết** (Khách hàng trung thành)
-   - **Tiềm Năng** (Khách hàng mới hoặc có tiềm năng)
-   - **Nguy Cơ** (Có dấu hiệu rời bỏ)
-   - **Ngủ Đông** (Đã mất kết nối)
+   - **VIP:** Mang lại giá trị cao nhất
+   - **Thân Thiết:** Khách hàng trung thành
+   - **Tiềm Năng:** Khách hàng mới hoặc có tiềm năng
+   - **Nguy Cơ:** Có dấu hiệu rời bỏ
+   - **Ngủ Đông:** Đã mất kết nối
 2. **Dashboard Trực Quan:** Báo cáo tổng quan dạng Doughnut Chart và Bar Chart.
 3. **Email Marketing Tự động:** Kích hoạt Webhook n8n để gửi kịch bản Email cá nhân hóa cho từng phân khúc (Tương thích tốt qua Serverless API).
 4. **Bảo mật & Tương thích:** Logo và template Email được tối ưu hóa bằng hình ảnh Base64 chống chặn hiển thị.
