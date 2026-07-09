@@ -267,6 +267,17 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredData = filteredData.filter(c => c.Segment === segmentVal);
         }
 
+        // 1.5 Filter by Search Name/Phone
+        const filterSearch = document.getElementById('filter-search');
+        if(filterSearch && filterSearch.value.trim() !== '') {
+            const searchStr = filterSearch.value.trim().toLowerCase();
+            filteredData = filteredData.filter(c => {
+                const name = c.name ? c.name.toLowerCase() : '';
+                const phone = c.phone ? String(c.phone) : '';
+                return name.includes(searchStr) || phone.includes(searchStr);
+            });
+        }
+
         // 2. Sort Data
         const sortVal = filterSort.value;
         filteredData.sort((a, b) => {
@@ -447,6 +458,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Events for filters
     filterSort.addEventListener('change', renderTable);
     filterSegment.addEventListener('change', renderTable);
+    
+    const filterSearchEl = document.getElementById('filter-search');
+    if (filterSearchEl) {
+        filterSearchEl.addEventListener('input', renderTable);
+    }
 
     // Run
     initApp();
