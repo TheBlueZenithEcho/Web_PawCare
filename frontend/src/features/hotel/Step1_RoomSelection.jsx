@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Loader2 } from 'lucide-react';
 import { SPECIES_FILTER, WEIGHT_BRACKETS } from '../../../src/constants/hotel';
-import { getRooms, isRoomAvailable } from '../../../src/services/supabase/hotelService';
+import { getRooms, isRoomAvailable } from '../../services/supabase/customer/booking/hotelService';
 import { formatVND } from '../../../src/utils/format';
 
 export default function Step1_RoomSelection({ booking, setBooking, onNext, lock }) {

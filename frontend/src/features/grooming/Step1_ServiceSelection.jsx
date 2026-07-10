@@ -5,7 +5,7 @@ import {
   getGroomingServices,
   getDurationRule,
   getAvailableTimeSlots,
-} from '../../../src/services/supabase/groomingService';
+} from '../../services/supabase/customer/booking/groomingService';
 import { formatDuration } from '../../../src/utils/groomingRules';
 import { formatVND } from '../../../src/utils/format';
 import BookingSummaryCard from '../../../src/components/booking/BookingSummaryCard';

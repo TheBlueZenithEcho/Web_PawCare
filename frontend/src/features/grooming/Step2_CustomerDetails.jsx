@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { getGroomingServices, getDurationRule } from '../../services/supabase/groomingService';
+import { getGroomingServices, getDurationRule } from '../../services/supabase/customer/booking/groomingService';
 import { calculateDeposit, requiresDeposit, formatDuration } from '../../utils/groomingRules';
 import BookingSummaryCard from '../../components/booking/BookingSummaryCard';
 import CustomerIdentityCard from '../../components/booking/CustomerIdentityCard';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { getRoomById } from '../../services/supabase/hotelService';
+import { getRoomById } from '../../services/supabase/customer/booking/hotelService';
 import {
   calculateNights,
   calculateSubtotal,

@@ -1,6 +1,6 @@
-import { supabase } from '../supabase/client';
-import { upsertCustomer, upsertPet } from './customerService';
-import { requiresDeposit, calculateDeposit } from '../../utils/groomingRules';
+import { supabase } from '../../client';
+import { upsertCustomer, upsertPet } from '../../customerService';
+import { requiresDeposit, calculateDeposit } from '../../../../utils/groomingRules';
 
 const STANDARD_TIME_SLOTS = ['09:00', '10:30', '13:00', '14:30', '16:00', '17:30'];
 

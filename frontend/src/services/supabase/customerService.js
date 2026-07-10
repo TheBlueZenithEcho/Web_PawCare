@@ -1,5 +1,9 @@
 import { supabase } from '../supabase/client';
 
+// ==========================================
+// KHACH HANG QUAY LAI / TRA CUU
+// ==========================================
+
 /**
  * BR (qtnv_new §5.1.1): hệ thống tự kiểm tra SĐT/email đã tồn tại trong bảng customer
  * chưa để nhận diện khách cũ, kèm toàn bộ pet đã lưu của khách đó.
@@ -39,10 +43,12 @@ export async function getCustomerById(customerId) {
   return data; // null nếu customer_id không còn tồn tại (vd bị xoá)
 }
 
+// ==========================================
+// THEM / CAP NHAT KHI BOOKING
+// ==========================================
+
 /**
  * Find-or-create customer theo SĐT. Dùng ngay trước khi tạo booking.
- * customer_id là character varying tự sinh phía app (không phải uuid tự tăng của DB)
- * -> cần tự sinh id nếu là khách mới. Điều chỉnh lại prefix/format theo quy ước thật của bạn.
  */
 export async function upsertCustomer({ customerId, firstName, lastName, phone, email }) {
   if (customerId) {
@@ -69,7 +75,7 @@ export async function upsertCustomer({ customerId, firstName, lastName, phone, e
 /**
  * Find-or-create pet cho customer hiện tại.
  */
-export async function upsertPet({ petId, customerId, petName, species, size, breed, weight, genderOrNotes = {} }) {
+export async function upsertPet({ petId, customerId, petName, species, size, breed, weight, dob, genderOrNotes = {} }) {
   const payload = {
     customer_id: customerId,
     pet_name: petName,
@@ -77,6 +83,7 @@ export async function upsertPet({ petId, customerId, petName, species, size, bre
     ...(size ? { size } : {}),
     breed: breed || null,
     weight: weight || null,
+    dob: dob || null, // Đã giữ lại phần fix ngày sinh của Hotel
     ...genderOrNotes, // gender, behavior_notes, allergy_notes, special_notes...
   };
 
@@ -96,8 +103,74 @@ export async function upsertPet({ petId, customerId, petName, species, size, bre
   return data;
 }
 
-// TODO: thay bằng cơ chế sinh ID nhất quán với các script trong /scripts (generate-sql.js...)
-// nếu team đã có quy ước riêng (ví dụ dùng uuid hoặc sequence trong Postgres).
+// ==========================================
+// MY PROFILE / DASHBOARD (NEW)
+// ==========================================
+
+/**
+ * Lấy customer đang đăng nhập (qua Supabase Auth session) kèm địa chỉ đã lưu.
+ * Yêu cầu: customer.user_id phải được set = auth.users.id lúc đăng ký/đăng nhập lần đầu.
+ * Trả về null nếu chưa đăng nhập hoặc chưa có customer record tương ứng.
+ */
+export async function getCurrentCustomer() {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) return null;
+
+  const { data, error } = await supabase
+    .from('customer')
+    .select('*, customer_address(*)')
+    .eq('user_id', authData.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[customerService.getCurrentCustomer]', error);
+    throw error;
+  }
+  return data ? { ...data, email_verified: Boolean(authData.user.email_confirmed_at) } : null;
+}
+
+export async function updateCustomerProfile(customerId, { firstName, lastName, phone, email }) {
+  const { data, error } = await supabase
+    .from('customer')
+    .update({ first_name: firstName, last_name: lastName, phone, email })
+    .eq('customer_id', customerId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Đổi mật khẩu cho user đang đăng nhập — dùng thẳng Supabase Auth, không qua bảng customer.
+ */
+export async function changePassword(newPassword) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
+/**
+ * Hoạt động gần đây nhất của khách: lấy booking mới nhất kèm tên pet.
+ * Dùng cho khối "Recent Activity" ở trang My Profile.
+ */
+export async function getMostRecentBooking(customerId) {
+  const { data, error } = await supabase
+    .from('booking')
+    .select('*, pet:pet_id(pet_name)')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// ==========================================
+// UTILS
+// ==========================================
+
+/**
+ * Sinh ID theo định dạng PREFIX + Số thứ tự tự tăng (vd: CUS00001, PET00001)
+ */
 async function generateIdAsync(prefix, tableName, idField) {
   const { data: lastItem } = await supabase
     .from(tableName)

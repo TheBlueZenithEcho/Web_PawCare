@@ -205,43 +205,21 @@ export const updateOrderStatus = async (order_id, newStatus) => {
 /**
  * Lấy toàn bộ giỏ hàng của customer từ DB, kèm thông tin sản phẩm.
  */
-export const fetchDbCart = async (customer_id) => {
+export async function fetchDbCart(customerId) {
+  // Thay đổi phần query để JOIN với bảng cart
   const { data, error } = await supabase
     .from('cart_item')
     .select(`
-      cart_item_id,
-      variant_id,
-      quantity,
-      product_variant (
-        capacity_label,
-        price,
-        stock_quantity,
-        product (name, brand, product_image (image_url))
-      )
+      *,
+      cart!inner(customer_id) 
     `)
-    .eq('customer_id', customer_id);
+    .eq('cart.customer_id', customerId); 
 
   if (error) {
     console.error('fetchDbCart error:', error);
     return [];
   }
-
-  return (data || []).map((item) => {
-    const variant = item.product_variant || {};
-    const product = variant.product || {};
-    const images = product.product_image || [];
-    return {
-      cart_item_id: item.cart_item_id,
-      variant_id: item.variant_id,
-      quantity: item.quantity,
-      name: product.name || 'Sản phẩm',
-      brand: product.brand || 'Khác',
-      price: Number(variant.price) || 0,
-      image: images[0]?.image_url || 'https://placehold.co/400?text=No+Image',
-      capacity_label: variant.capacity_label || '',
-      stock_quantity: Number(variant.stock_quantity) || 0,
-    };
-  });
+  return data || [];
 };
 
 /**

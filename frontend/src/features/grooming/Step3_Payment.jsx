@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, Loader2, Landmark, Smartphone, AlertTriangle } from 'lucide-react';
-import { getGroomingServices, getDurationRule, createGroomingBooking } from '../../../src/services/supabase/groomingService';
+import { getGroomingServices, getDurationRule, createGroomingBooking } from '../../services/supabase/customer/booking/groomingService';
 import { calculateDeposit, requiresDeposit, formatDuration } from '../../../src/utils/groomingRules';
 import { formatVND } from '../../../src/utils/format';
 import BookingSummaryCard from '../../../src/components/booking/BookingSummaryCard';

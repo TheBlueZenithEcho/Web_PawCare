@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, Loader2, Landmark, Smartphone, AlertTriangle } from 'lucide-react';
-import { getRoomById, createHotelBooking } from '../../../src/services/supabase/hotelService';
+import { getRoomById, createHotelBooking } from '../../services/supabase/customer/booking/hotelService';
 import { calculateNights, calculateSubtotal, calculateTax, calculateDeposit, requiresDeposit } from '../../../src/utils/hotelRules';
 import { formatVND } from '../../../src/utils/format';
 import BookingSummaryCard from '../../../src/components/booking/BookingSummaryCard';
@@ -47,13 +47,11 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   const finalize = async () => {
     setSubmitError('');
     try {
-      await createHotelBooking({
-        booking,
-        room,
-        totalBill: total,
-        orderId,
-        specialNotesText: buildSpecialNotesText(booking),
-      });
+      let calculatedDob = null;
+      if (booking.pet.ageYears) {
+        const currentYear = new Date().getFullYear();
+        calculatedDob = `${currentYear - parseInt(booking.pet.ageYears)}-01-01`; // Mặc định ngày 1/1
+      }
       setPhase('done');
       onConfirmed?.();
     } catch (e) {

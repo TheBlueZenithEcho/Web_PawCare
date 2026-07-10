@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import GroomingBookingFlow from '../../src/features/grooming/GroomingBookingFlow';
+import GroomingBookingFlow from '../../../features/grooming/GroomingBookingFlow';
 
 export default function DatLichGroomingPage() {
   return (

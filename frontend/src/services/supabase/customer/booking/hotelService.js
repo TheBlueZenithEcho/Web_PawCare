@@ -1,6 +1,6 @@
-import { supabase } from '../supabase/client';
-import { upsertCustomer, upsertPet } from './customerService';
-import { requiresDeposit, calculateDeposit } from '../../utils/hotelRules';
+import { supabase } from '../../client';
+import { upsertCustomer, upsertPet } from '../../customerService';
+import { requiresDeposit, calculateDeposit } from '../../../../utils/hotelRules';
 
 export async function getRoomById(roomId) {
   const { data, error } = await supabase.from('room').select('*').eq('room_id', roomId).single();
@@ -10,12 +10,10 @@ export async function getRoomById(roomId) {
 
 export async function getRooms({ species, maxWeight } = {}) {
   let query = supabase.from('room').select('*').eq('status', 'active');
-  if (maxWeight) query = query.gte('max_weight', 0).lte('max_weight', 999999); // placeholder, lọc kỹ hơn ở dưới
+  if (maxWeight) query = query.gte('max_weight', 0).lte('max_weight', 999999); 
   const { data, error } = await query;
   if (error) throw error;
 
-  // Lọc species + max_weight ở client vì suitable_species có thể là enum đơn ('dog'|'cat')
-  // hoặc giá trị đại diện "cả 2" tuỳ quy ước thật trong DB — xác nhận lại enum của bạn.
   return data.filter((room) => {
     const speciesOk = !species || room.suitable_species === species || room.suitable_species === 'both';
     const weightOk = !maxWeight || room.max_weight <= maxWeight || maxWeight === Infinity;
@@ -23,11 +21,6 @@ export async function getRooms({ species, maxWeight } = {}) {
   });
 }
 
-/**
- * BR chung: 1 phòng chỉ được chọn nếu không trùng khoảng ngày với booking_room khác
- * (trạng thái booking chưa bị hủy). Overlap: check_in_date < otherCheckOut AND
- * check_out_date > otherCheckIn.
- */
 export async function isRoomAvailable(roomId, checkIn, checkOut) {
   const { data, error } = await supabase
     .from('booking_room')
@@ -41,12 +34,7 @@ export async function isRoomAvailable(roomId, checkIn, checkOut) {
   });
 }
 
-/**
- * Tạo booking Pet Hotel hoàn chỉnh: find-or-create customer/pet -> insert booking
- * -> insert booking_room -> (nếu cần cọc) insert booking_payment.
- * Cùng lưu ý về atomicity như groomingService.createGroomingBooking.
- */
-export async function createHotelBooking({ booking, room, totalBill, orderId, specialNotesText }) {
+export async function createHotelBooking({ booking, room, totalBill, taxAmount, orderId, specialNotesText }) {
   const needsDeposit = requiresDeposit(totalBill);
   const depositAmount = calculateDeposit(totalBill);
 
@@ -65,6 +53,7 @@ export async function createHotelBooking({ booking, room, totalBill, orderId, sp
     species: booking.pet.species,
     breed: booking.pet.breed,
     weight: booking.pet.weight || null,
+    dob: booking.pet.dob || null, // Truyền dob xuống
     genderOrNotes: {
       gender: booking.pet.gender || null,
       behavior_notes: booking.pet.behaviorNotes || null,
@@ -89,7 +78,6 @@ export async function createHotelBooking({ booking, room, totalBill, orderId, sp
     .single();
   if (bookingError) throw bookingError;
 
-  // Fetch next BRM id
   const { data: lastRm } = await supabase
     .from('booking_room')
     .select('booking_room_id')
@@ -111,12 +99,16 @@ export async function createHotelBooking({ booking, room, totalBill, orderId, sp
     check_in_date: booking.checkIn,
     check_out_date: booking.checkOut,
     price_per_night: room.price_per_night,
-    extra_fee: 0,
+    extra_fee: taxAmount || 0, // Nhận tiền thuế làm extra_fee
   });
   if (brError) throw brError;
 
   if (needsDeposit) {
+    // Sinh mã payment_id để tránh lỗi constraint
+    const paymentId = `PAY${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+    
     const { error: payError } = await supabase.from('booking_payment').insert({
+      payment_id: paymentId,
       booking_id: bookingRow.booking_id,
       amount: depositAmount,
       method: booking.paymentMethod,
