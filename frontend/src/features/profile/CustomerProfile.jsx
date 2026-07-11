@@ -49,7 +49,7 @@ export default function MyProfilePage() {
   return (
     <AccountLayout customer={customer} loading={loading} notLoggedIn={notLoggedIn}>
       <div>
-        <h1 className="text-3xl font-bold text-wood-bark">My Profile</h1>
+        <h1 className="text-3xl font-bold text-wood-bark">Hồ sơ của tôi</h1>
         <p className="text-wood-bark/60 mt-1">Quản lý thông tin cá nhân và địa chỉ nhận hàng.</p>
       </div>
 
@@ -97,7 +97,7 @@ function ProfileInfoCard({ customer, onUpdated }) {
         <h3 className="font-bold text-wood-bark">Thông tin cá nhân</h3>
         {!editing && (
           <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 text-sm font-semibold text-understory hover:text-wood-bark">
-            <Pencil size={14} /> Edit Profile
+            <Pencil size={14} /> Sửa hồ sơ
           </button>
         )}
       </div>
@@ -106,11 +106,11 @@ function ProfileInfoCard({ customer, onUpdated }) {
         <div className="flex flex-col gap-4">
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="grid sm:grid-cols-2 gap-4">
-            <LabeledInput label="First Name" value={form.firstName} onChange={(v) => setForm((f) => ({ ...f, firstName: v }))} />
-            <LabeledInput label="Last Name" value={form.lastName} onChange={(v) => setForm((f) => ({ ...f, lastName: v }))} />
+            <LabeledInput label="Tên" value={form.firstName} onChange={(v) => setForm((f) => ({ ...f, firstName: v }))} />
+            <LabeledInput label="Họ" value={form.lastName} onChange={(v) => setForm((f) => ({ ...f, lastName: v }))} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <LabeledInput label="Phone" value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
+            <LabeledInput label="Số điện thoại" value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
             <LabeledInput label="Email" value={form.email} onChange={(v) => setForm((f) => ({ ...f, email: v }))} />
           </div>
           <div className="flex gap-3">

@@ -4,14 +4,32 @@ import { formatVND } from '@/utils/format';
 import { toast } from 'sonner';
 
 export default function PaymentModal({ booking, onClose, onConfirm }) {
-  const [lateFee, setLateFee] = useState(0);
+  // Tự động tính phí trả trễ cho Hotel (ví dụ: 250k/ngày)
+  const calculateInitialLateFee = () => {
+    if (booking.booking_type !== 'Hotel') return 0;
+    const checkoutStr = booking.booking_room?.[0]?.check_out_date || booking.checkout_date;
+    if (!checkoutStr) return 0;
+    
+    const checkoutDate = new Date(checkoutStr);
+    checkoutDate.setHours(23, 59, 59, 999); // Trễ tính từ ngày hôm sau
+    
+    const now = new Date();
+    if (now > checkoutDate) {
+      const diffDays = Math.ceil((now - checkoutDate) / (1000 * 60 * 60 * 24));
+      return diffDays * 250000;
+    }
+    return 0;
+  };
+
+  const [lateFee, setLateFee] = useState(calculateInitialLateFee());
   const [extraFee, setExtraFee] = useState(0);
   const [discountCode, setDiscountCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('Tiền mặt');
 
   const baseAmount = booking.total_bill || 0;
-  const totalAmount = baseAmount + Number(lateFee) + Number(extraFee) - Number(discountAmount);
+  const newTotalBill = baseAmount + Number(lateFee) + Number(extraFee) - Number(discountAmount);
+  const totalAmount = newTotalBill - (booking.deposit_amount || 0);
   
   const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`;
   const serviceName = booking.booking_service?.[0]?.service?.service_name || booking.booking_type || 'Grooming';
@@ -32,7 +50,8 @@ export default function PaymentModal({ booking, onClose, onConfirm }) {
     setTimeout(() => {
       onConfirm({
         payment_method: paymentMethod,
-        total_paid: totalAmount,
+        new_total_bill: newTotalBill,
+        total_paid: totalAmount > 0 ? totalAmount : 0,
         fees: { lateFee, extraFee, discountAmount, discountCode }
       });
     }, 1500); // Chờ 1.5s để mô phỏng webhook

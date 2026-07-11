@@ -30,6 +30,7 @@ export default function SitterDiaryModal({ booking, initialMode = 'add', onClose
       status: formData.status,
       notes: formData.notes,
       issues: formData.issues,
+      photos: formData.photos,
       staff: "Nhân viên (Bạn)"
     };
 

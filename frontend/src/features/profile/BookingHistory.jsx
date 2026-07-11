@@ -6,10 +6,10 @@ import { formatVND } from '../../utils/format'; // Trỏ về utils/format.js d�
 import AccountLayout from '../../components/profile/ProfileSidebar'; // Dùng chung layout Sidebar
 
 const TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'upcoming', label: 'Upcoming' },
-  { id: 'completed', label: 'Completed' },
-  { id: 'cancelled', label: 'Cancelled' },
+  { id: 'all', label: 'Tất cả' },
+  { id: 'upcoming', label: 'Sắp tới' },
+  { id: 'completed', label: 'Đã xong' },
+  { id: 'cancelled', label: 'Đã hủy' },
 ];
 
 function classifyBooking(booking) {
@@ -87,7 +87,7 @@ export default function BookingHistoryPage() {
       {customer && (
         <>
           <div>
-            <h1 className="text-3xl font-bold text-wood-bark">Booking History</h1>
+            <h1 className="text-3xl font-bold text-wood-bark">Lịch sử đặt lịch</h1>
             <p className="text-wood-bark/60 mt-1 max-w-2xl">
               Xem lại và quản lý các lịch hẹn Grooming/Spa và Pet Hotel của bạn.
             </p>
@@ -112,7 +112,7 @@ export default function BookingHistoryPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Find a booking..."
+                placeholder="Tìm kiếm đơn..."
                 className="pl-9 pr-4 py-2.5 rounded-full bg-white shadow-sm text-sm outline-none focus:ring-2 focus:ring-understory/30 w-64"
               />
             </div>
@@ -153,7 +153,7 @@ export default function BookingHistoryPage() {
                       <div className="flex items-center gap-6 bg-fresh-grown/15 rounded-2xl px-4 py-3 mt-4 text-sm">
                         {b.petName && (
                           <div>
-                            <p className="text-[10px] uppercase text-wood-bark/40">Pet</p>
+                            <p className="text-[10px] uppercase text-wood-bark/40">Thú cưng</p>
                             <p className="font-semibold text-wood-bark">{b.petName}</p>
                           </div>
                         )}
@@ -178,7 +178,7 @@ export default function BookingHistoryPage() {
                     <div className="lg:w-56 flex flex-col gap-2 shrink-0">
                       {status !== 'cancelled' && (
                         <>
-                          <p className="text-xs text-wood-bark/40">Amount Paid</p>
+                          <p className="text-xs text-wood-bark/40">Số tiền đã trả</p>
                           <p className="text-xl font-bold text-wood-bark">{formatVND(b.amountPaid)}</p>
                           {b.paymentMethod && (
                             <p className="text-xs text-wood-bark/50 flex items-center gap-1.5">
@@ -192,7 +192,7 @@ export default function BookingHistoryPage() {
                         href={b.booking_type === 'grooming' ? '/customer/booking/dich_vu_cham_soc' : '/customer/booking/dich_vu_luu_tru'}
                         className="rounded-full bg-understory text-white text-center py-2.5 text-sm font-bold hover:bg-wood-bark transition-colors mt-2"
                       >
-                        {status === 'cancelled' ? 'Reschedule' : 'Book Again'}
+                        {status === 'cancelled' ? 'Đặt lại' : 'Đặt lại'}
                       </a>
 
                       {status === 'cancelled' ? (
@@ -200,11 +200,11 @@ export default function BookingHistoryPage() {
                           onClick={() => setOpenCancelReasonId(isCancelReasonOpen ? null : b.booking_id)}
                           className="rounded-full border border-wood-bark/20 py-2.5 text-sm font-semibold text-wood-bark/70 hover:border-red-300 hover:text-red-500 transition-colors"
                         >
-                          {isCancelReasonOpen ? 'Ẩn lý do hủy' : 'View Cancel Reason'}
+                          {isCancelReasonOpen ? 'Ẩn lý do hủy' : 'Xem lý do hủy'}
                         </button>
                       ) : (
                         <button className="rounded-full border border-wood-bark/20 py-2.5 text-sm font-semibold text-wood-bark/70 hover:border-understory hover:text-understory transition-colors">
-                          View Details
+                          Xem chi tiết
                         </button>
                       )}
                     </div>
@@ -225,7 +225,7 @@ function StatusBadge({ status }) {
     completed: 'bg-fresh-grown/50 text-understory',
     cancelled: 'bg-red-100 text-red-500',
   };
-  const labels = { upcoming: 'UPCOMING', completed: 'COMPLETED', cancelled: 'CANCELLED' };
+  const labels = { upcoming: 'SẮP TỚI', completed: 'ĐÃ XONG', cancelled: 'ĐÃ HỦY' };
   return (
     <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${styles[status]}`}>
       {labels[status]}

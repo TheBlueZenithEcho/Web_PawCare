@@ -12,26 +12,38 @@ export default function StaffLayout({ children }) {
 
   useEffect(() => {
     const fetchStaff = async () => {
-      const staff = await getStaffById('STF00002');
-      if (staff) {
-        setCurrentUser({
-          staff_id: staff.staff_id,
-          full_name: `${staff.last_name} ${staff.first_name}`,
-          email: staff.email,
-          phone: staff.phone,
-          avatar_url: staff.avatar,
-          role: staff.role === 'receptionist' ? 'Lễ tân' : 
-                staff.role === 'admin' ? 'Admin Master' :
-                staff.role === 'groomer' ? 'Groomer' :
-                staff.role === 'pet_sitter' ? 'Pet Sitter' :
-                staff.role === 'sales_staff' ? 'Nhân viên Sales' :
-                staff.role === 'warehouse_staff' ? 'Nhân viên Kho' : staff.role,
-          shift: 'Toàn thời gian', // Mặc định
-        });
+      try {
+        const saved = localStorage.getItem('staff_user');
+        if (!saved) {
+          router.push('/');
+          return;
+        }
+        
+        const parsed = JSON.parse(saved);
+        const staff = await getStaffById(parsed.staff_id);
+        
+        if (staff) {
+          setCurrentUser({
+            staff_id: staff.staff_id,
+            full_name: `${staff.last_name} ${staff.first_name}`,
+            email: staff.email,
+            phone: staff.phone,
+            avatar_url: staff.avatar,
+            role: staff.role === 'receptionist' ? 'Lễ tân' : 
+                  staff.role === 'admin' ? 'Admin Master' :
+                  staff.role === 'groomer' ? 'Groomer' :
+                  staff.role === 'pet_sitter' ? 'Pet Sitter' :
+                  staff.role === 'sales_staff' ? 'Nhân viên Sales' :
+                  staff.role === 'warehouse_staff' ? 'Nhân viên Kho' : staff.role,
+            shift: 'Toàn thời gian', // Mặc định
+          });
+        }
+      } catch (err) {
+        console.error('Error parsing staff_user or fetching staff:', err);
       }
     };
     fetchStaff();
-  }, []);
+  }, [router]);
 
   const initials = currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'NV';
 

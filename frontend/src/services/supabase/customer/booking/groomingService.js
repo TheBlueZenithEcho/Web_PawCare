@@ -98,7 +98,7 @@ async function getBookingServicesForDay(dateKey) {
  * Nếu cần đảm bảo atomicity (rollback khi 1 bước lỗi), nên chuyển toàn bộ logic
  * này vào 1 Postgres function (RPC) và gọi qua supabase.rpc(...) thay vì insert tuần tự.
  */
-export async function createGroomingBooking({ booking, totalBill, orderId }) {
+export async function createGroomingBooking({ booking, totalBill }) {
   const needsDeposit = requiresDeposit(totalBill);
   const depositAmount = calculateDeposit(totalBill);
 
@@ -120,6 +120,22 @@ export async function createGroomingBooking({ booking, totalBill, orderId }) {
     weight: booking.pet.weight || null,
     genderOrNotes: { allergy_notes: booking.pet.allergyNotes || null },
   });
+
+  // Generate BGS booking ID
+  const prefix = 'BGS';
+  const { data: lastBooking } = await supabase
+    .from('booking')
+    .select('booking_id')
+    .like('booking_id', `${prefix}%`)
+    .order('booking_id', { ascending: false })
+    .limit(1);
+
+  let nextBId = 1;
+  if (lastBooking && lastBooking.length > 0 && lastBooking[0].booking_id) {
+    const numPart = parseInt(lastBooking[0].booking_id.replace(prefix, ''), 10);
+    if (!isNaN(numPart)) nextBId = numPart + 1;
+  }
+  const orderId = `${prefix}${nextBId.toString().padStart(5, '0')}`;
 
   const { data: bookingRow, error: bookingError } = await supabase
     .from('booking')

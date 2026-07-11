@@ -34,7 +34,7 @@ export async function isRoomAvailable(roomId, checkIn, checkOut) {
   });
 }
 
-export async function createHotelBooking({ booking, room, totalBill, taxAmount, orderId, specialNotesText }) {
+export async function createHotelBooking({ booking, room, totalBill, taxAmount, specialNotesText }) {
   const needsDeposit = requiresDeposit(totalBill);
   const depositAmount = calculateDeposit(totalBill);
 
@@ -61,6 +61,22 @@ export async function createHotelBooking({ booking, room, totalBill, taxAmount, 
       special_notes: specialNotesText || null,
     },
   });
+
+  // Generate BHO booking ID
+  const prefix = 'BHO';
+  const { data: lastBooking } = await supabase
+    .from('booking')
+    .select('booking_id')
+    .like('booking_id', `${prefix}%`)
+    .order('booking_id', { ascending: false })
+    .limit(1);
+
+  let nextBId = 1;
+  if (lastBooking && lastBooking.length > 0 && lastBooking[0].booking_id) {
+    const numPart = parseInt(lastBooking[0].booking_id.replace(prefix, ''), 10);
+    if (!isNaN(numPart)) nextBId = numPart + 1;
+  }
+  const orderId = `${prefix}${nextBId.toString().padStart(5, '0')}`;
 
   const { data: bookingRow, error: bookingError } = await supabase
     .from('booking')

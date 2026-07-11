@@ -20,7 +20,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
   const [isAddingPet, setIsAddingPet] = useState(false);
   const [newPetForm, setNewPetForm] = useState({
     pet_name: '', species: 'dog', breed: '', weight: '', gender: 'unknown',
-    health_record: { skin_condition: 'Bình thường', coat_condition: 'Bình thường', ear_condition: 'Bình thường', eye_condition: 'Bình thường', nail_condition: 'Bình thường', wound_description: 'Không', recorded_at: new Date().toISOString().split('T')[0] }
+    health_record: { skin_condition: '', coat_condition: '', ear_condition: '', eye_condition: '', nail_condition: '', wound_description: '', recorded_at: new Date().toISOString().split('T')[0] }
   });
 
 
@@ -55,7 +55,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
           <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/30 bg-white/10 rounded-full transition-colors z-10 cursor-pointer">
             <X size={20} />
           </button>
-          <div className="flex gap-6 items-center">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-center">
             <div className="relative w-24 h-24 rounded-full bg-[#dcfce7] shadow-lg border-4 border-white/20 shrink-0 flex items-center justify-center text-4xl font-bold text-understory overflow-hidden group">
               {(isEditingCustomer ? customerForm.cus_ava : localCustomer.cus_ava) ? (
                 <img src={isEditingCustomer ? customerForm.cus_ava : localCustomer.cus_ava} alt="Customer Avatar" className="w-full h-full object-cover" />
@@ -82,15 +82,15 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 </label>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <div className="flex-1 min-w-0 w-full text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-1.5 flex-wrap">
                 {isEditingCustomer ? (
-                  <div className="flex gap-2 flex-1 min-w-0">
+                  <div className="flex gap-2 flex-1 min-w-0 justify-center md:justify-start">
                     <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold w-24 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.last_name} onChange={e => setCustomerForm({ ...customerForm, last_name: e.target.value })} placeholder="Họ" />
-                    <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold flex-1 min-w-0 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.first_name} onChange={e => setCustomerForm({ ...customerForm, first_name: e.target.value })} placeholder="Tên" />
+                    <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold flex-1 min-w-0 max-w-[200px] focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.first_name} onChange={e => setCustomerForm({ ...customerForm, first_name: e.target.value })} placeholder="Tên" />
                   </div>
                 ) : (
-                  <h2 className="text-xl font-bold truncate" title={`${localCustomer.last_name} ${localCustomer.first_name}`}>
+                  <h2 className="text-xl font-bold truncate max-w-full" title={`${localCustomer.last_name} ${localCustomer.first_name}`}>
                     {localCustomer.last_name} {localCustomer.first_name}
                   </h2>
                 )}
@@ -107,17 +107,17 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 </div>
               </div>
               
-              <div className="text-white/80 text-sm mb-3 flex items-center gap-2 flex-wrap">
+              <div className="text-white/80 text-sm mb-3 flex items-center justify-center md:justify-start gap-2 flex-wrap">
                 <span>ID: {localCustomer.customer_id}</span>
                 <span className="text-white/40">•</span>
                 <span>Tham gia: {new Date(localCustomer.created_at).toLocaleDateString('vi-VN')}</span>
               </div>
 
-              <div className="flex gap-4 text-sm font-medium flex-wrap">
+              <div className="flex gap-2 text-sm font-medium flex-wrap justify-center md:justify-start">
                 {isEditingCustomer ? (
-                  <div className="flex gap-3 w-full">
+                  <div className="flex gap-2 w-full justify-center md:justify-start">
                     <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm w-32 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.phone} onChange={e => setCustomerForm({ ...customerForm, phone: e.target.value })} placeholder="SĐT" />
-                    <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm flex-1 min-w-0 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.email} onChange={e => setCustomerForm({ ...customerForm, email: e.target.value })} placeholder="Email" />
+                    <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm w-48 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.email} onChange={e => setCustomerForm({ ...customerForm, email: e.target.value })} placeholder="Email" />
                   </div>
                 ) : (
                   <>
@@ -127,8 +127,8 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 )}
               </div>
             </div>
-            <div className="flex gap-4 items-center shrink-0">
-              <div className="flex flex-col gap-2 relative">
+            <div className="flex flex-row md:flex-col gap-2 items-center justify-center w-full md:w-auto flex-wrap">
+              <div className="flex flex-row md:flex-col gap-2">
                 {isEditingCustomer ? (
                   <div className="flex gap-2">
                     <button onClick={() => setIsEditingCustomer(false)} className="text-sm font-bold bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-xl transition-colors border border-white/20">Hủy</button>
@@ -170,7 +170,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                   </div>
                 )}
                 {!customer.user_id && (
-                  <div className="flex flex-col gap-2 relative">
+                  <div className="flex flex-row md:flex-col gap-2">
                     <button
                       onClick={() => onOpenCreateAccount(customer)}
                       className="text-xs font-semibold bg-white text-understory hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
@@ -262,7 +262,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                           const newPet = await createPet({ ...newPetForm, customer_id: localCustomer.customer_id });
                           setLocalPets([newPet, ...localPets]);
                           setIsAddingPet(false);
-                          setNewPetForm({ pet_name: '', species: 'dog', breed: '', weight: '', gender: 'unknown', health_record: { skin_condition: 'Bình thường', coat_condition: 'Bình thường', ear_condition: 'Bình thường', eye_condition: 'Bình thường', nail_condition: 'Bình thường', wound_description: 'Không', recorded_at: new Date().toISOString().split('T')[0] } });
+                          setNewPetForm({ pet_name: '', species: 'dog', breed: '', weight: '', gender: 'unknown', health_record: { skin_condition: '', coat_condition: '', ear_condition: '', eye_condition: '', nail_condition: '', wound_description: '', recorded_at: new Date().toISOString().split('T')[0] } });
                           handleAction('Đã thêm thú cưng mới!');
                           if (onSuccess) onSuccess();
                         } catch(e) { alert('Lỗi: ' + e.message); }
@@ -325,7 +325,11 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                               <button onClick={() => setEditingPetId(null)} className="text-sm font-bold bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-xl transition-colors border border-white/20">Hủy</button>
                               <button onClick={async () => {
                                 try {
-                                  await updatePet(petForm.pet_id, petForm);
+                                  // Tách health_record ra để không gửi lên Supabase
+                                  const { health_record, ...petDataToSave } = petForm;
+                                  await updatePet(petForm.pet_id, petDataToSave);
+                                  
+                                  // Cập nhật state local bao gồm cả health_record để hiển thị UI
                                   setLocalPets(localPets.map(p => p.pet_id === petForm.pet_id ? petForm : p));
                                   setEditingPetId(null);
                                   handleAction('Đã lưu hồ sơ thú cưng!');
@@ -340,7 +344,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                                   setPetForm({
                                     ...pet,
                                     health_record: pet.health_record || {
-                                      skin_condition: 'Bình thường', coat_condition: 'Bình thường', ear_condition: 'Bình thường', eye_condition: 'Bình thường', nail_condition: 'Bình thường', wound_description: 'Không', recorded_at: new Date().toISOString().split('T')[0]
+                                      skin_condition: '', coat_condition: '', ear_condition: '', eye_condition: '', nail_condition: '', wound_description: '', recorded_at: new Date().toISOString().split('T')[0]
                                     }
                                   });
                                   setEditingPetId(pet.pet_id);
@@ -402,42 +406,45 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                           </div>
                         </div>
 
-                        {(pet.health_record || isEditing) && (
-                          <div className={`mt-4 pt-4 border-t ${isEditing ? 'border-white/20' : 'border-gray-100'}`}>
-                            <div className={`flex items-center gap-2 mb-3 ${isEditing ? 'text-white/80' : 'text-lacustral'}`}>
-                              <Stethoscope size={18} className={isEditing ? 'text-white/90' : 'text-chloro'} />
-                              <h4 className={`font-bold ${isEditing ? 'text-white' : 'text-understory'}`}>Bệnh án / Kiểm tra sức khỏe</h4>
-                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ml-auto ${isEditing ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                {isEditing ? petForm.health_record?.recorded_at : pet.health_record?.recorded_at}
-                              </span>
-                            </div>
-                            <div className={`grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 p-4 rounded-xl border ${isEditing ? 'bg-white/5 border-white/10' : 'bg-gray-50/50 border-gray-100'}`}>
-                              {[
-                                { key: 'skin_condition', label: 'Tình trạng Da' },
-                                { key: 'coat_condition', label: 'Tình trạng Lông' },
-                                { key: 'ear_condition', label: 'Tình trạng Tai' },
-                                { key: 'eye_condition', label: 'Tình trạng Mắt' },
-                                { key: 'nail_condition', label: 'Tình trạng Móng' },
-                                { key: 'wound_description', label: 'Mô tả Vết thương' }
-                              ].map(field => (
+                        <div className={`mt-4 pt-4 border-t ${isEditing ? 'border-white/20' : 'border-gray-100'}`}>
+                          <div className={`flex items-center gap-2 mb-3 ${isEditing ? 'text-white/80' : 'text-lacustral'}`}>
+                            <Stethoscope size={18} className={isEditing ? 'text-white/90' : 'text-chloro'} />
+                            <h4 className={`font-bold ${isEditing ? 'text-white' : 'text-understory'}`}>Bệnh án / Kiểm tra sức khỏe</h4>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ml-auto ${isEditing ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                              {isEditing ? (petForm.health_record?.recorded_at || 'Chưa cập nhật') : (pet.health_record?.recorded_at || 'Chưa cập nhật')}
+                            </span>
+                          </div>
+                          <div className={`grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 p-4 rounded-xl border ${isEditing ? 'bg-white/5 border-white/10' : 'bg-gray-50/50 border-gray-100'}`}>
+                            {[
+                              { key: 'skin_condition', label: 'Tình trạng Da' },
+                              { key: 'coat_condition', label: 'Tình trạng Lông' },
+                              { key: 'ear_condition', label: 'Tình trạng Tai' },
+                              { key: 'eye_condition', label: 'Tình trạng Mắt' },
+                              { key: 'nail_condition', label: 'Tình trạng Móng' },
+                              { key: 'wound_description', label: 'Mô tả Vết thương' }
+                            ].map(field => {
+                              const defaultVal = field.key === 'wound_description' ? 'Không' : 'Bình thường';
+                              const displayVal = pet.health_record?.[field.key] || defaultVal;
+                              return (
                                 <div key={field.key}>
-                                  <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${isEditing ? 'text-white/60' : 'text-gray-400'}`}>{field.label}</p>
+                                  <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${isEditing ? 'text-white/60' : 'text-gray-400'}`}>{field.label}</p>
                                   {isEditing ? (
                                     <input
-                                      className="w-full px-2 py-1 text-sm bg-white/10 border border-white/20 text-white rounded font-medium focus:outline-none focus:bg-white/20 transition-colors"
+                                      className="w-full px-2 py-1 text-sm bg-white/10 border border-white/20 text-white rounded font-medium focus:outline-none focus:bg-white/20 transition-colors placeholder-white/50"
+                                      placeholder={defaultVal}
                                       value={petForm.health_record?.[field.key] || ''}
                                       onChange={e => setPetForm({ ...petForm, health_record: { ...petForm.health_record, [field.key]: e.target.value } })}
                                     />
                                   ) : (
-                                    <p className={`font-medium ${(pet.health_record?.[field.key] || '').includes('Bình thường') || (pet.health_record?.[field.key] || '').includes('Không') ? 'text-gray-700' : 'text-orange-600 font-bold'}`}>
-                                      {pet.health_record?.[field.key]}
+                                    <p className={`font-medium ${displayVal === 'Bình thường' || displayVal === 'Không' ? 'text-gray-700' : 'text-orange-600 font-bold'}`}>
+                                      {displayVal}
                                     </p>
                                   )}
                                 </div>
-                              ))}
-                            </div>
+                              );
+                            })}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                     );

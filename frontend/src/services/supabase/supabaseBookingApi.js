@@ -46,7 +46,7 @@ const STATUS_MAP = {
 };
 const STATUS_MAP_REVERSE = Object.fromEntries(Object.entries(STATUS_MAP).map(([k, v]) => [v, k]));
 
-// Lấy toàn bộ bookings từ DB (có join customer, pet, booking_service, booking_room)
+// Lấy toàn bộ bookings từ DB (có join customer, pet, booking_service, booking_room, care_log)
 export const fetchBookings = async () => {
   const { data, error } = await supabase
     .from('booking')
@@ -55,17 +55,56 @@ export const fetchBookings = async () => {
       customer:customer_id (customer_id, first_name, last_name, phone, email, cus_ava),
       pet:pet_id (pet_id, pet_name, species, breed, weight, dob, gender, pet_ava, behavior_notes, allergy_notes, special_notes),
       booking_service (booking_service_id, service_id, groomer_id, table_id, slot_start, slot_end, price, service:service_id(service_name)),
-      booking_room (booking_room_id, room_id, check_in_date, check_out_date, price_per_night)
+      booking_room (booking_room_id, room_id, check_in_date, check_out_date, price_per_night),
+      care_log (care_log_id, food_amount, playtime_minutes, status, note, issues_note, recorded_at, staff_id, staff:staff_id(first_name, last_name))
     `)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
 
-  return (data || []).map(b => ({
-    ...b,
-    status: STATUS_MAP[b.status] || b.status?.toUpperCase() || 'CONFIRMED',
-    booking_type: b.booking_type === 'grooming' ? 'Grooming' : b.booking_type === 'hotel' ? 'Hotel' : b.booking_type,
-  }));
+  return (data || []).map(b => {
+    const diaries = (b.care_log || []).sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at)).map(log => ({
+      date: new Date(log.recorded_at).toLocaleDateString('vi-VN'),
+      food: log.food_amount,
+      playtime: log.playtime_minutes,
+      status: log.status,
+      notes: log.note,
+      issues: log.issues_note,
+      staff: log.staff ? `${log.staff.last_name || ''} ${log.staff.first_name || ''}`.trim() : 'Nhân viên'
+    }));
+
+    const pet = b.pet || {};
+    const customer = b.customer || {};
+    
+    let pet_age = 'N/A';
+    if (pet.dob) {
+      const diffMs = Date.now() - new Date(pet.dob).getTime();
+      const ageDt = new Date(diffMs); 
+      const years = Math.abs(ageDt.getUTCFullYear() - 1970);
+      const months = ageDt.getUTCMonth();
+      if (years > 0) pet_age = `${years} tuổi`;
+      else if (months > 0) pet_age = `${months} tháng`;
+      else pet_age = 'Dưới 1 tháng';
+    }
+
+    const genderMap = { male: 'Đực', female: 'Cái' };
+    const pet_gender = genderMap[pet.gender] || pet.gender || 'N/A';
+
+    return {
+      ...b,
+      pet_name: pet.pet_name,
+      pet_type: pet.species === 'cat' ? 'Mèo' : pet.species === 'dog' ? 'Chó' : pet.species,
+      pet_breed: pet.breed,
+      pet_weight: pet.weight,
+      pet_gender,
+      pet_age,
+      customer_name: `${customer.last_name || ''} ${customer.first_name || ''}`.trim(),
+      customer_phone: customer.phone,
+      status: STATUS_MAP[b.status] || b.status?.toUpperCase() || 'CONFIRMED',
+      booking_type: b.booking_type === 'grooming' ? 'Grooming' : b.booking_type === 'hotel' ? 'Hotel' : b.booking_type,
+      diaries
+    };
+  });
 };
 // Cập nhật trạng thái booking
 export const updateBookingStatus = async (bookingId, uiStatus) => {
@@ -78,32 +117,56 @@ export const updateBookingStatus = async (bookingId, uiStatus) => {
 };
 
 // Thanh toán booking và cập nhật tổng chi tiêu
-export const checkoutBookingPayment = async (bookingId) => {
+export const checkoutBookingPayment = async (bookingId, checkoutData) => {
   const { data: booking, error: bError } = await supabase
     .from('booking')
     .select('status, total_bill, customer_id')
     .eq('booking_id', bookingId)
     .single();
-    
+
   if (bError) throw bError;
   if (booking.status === 'paid' || booking.status === 'finished') return;
 
+  const newTotalBill = checkoutData?.new_total_bill || booking.total_bill;
+
   const { error: updError } = await supabase
     .from('booking')
-    .update({ status: 'paid' })
+    .update({ status: 'paid', total_bill: newTotalBill })
     .eq('booking_id', bookingId);
   if (updError) throw updError;
 
-  if (booking.customer_id && booking.total_bill) {
+  if (checkoutData && checkoutData.total_paid > 0) {
+    const paymentId = `PAY${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+    let method = 'cash';
+    if (checkoutData.payment_method === 'Tiền mặt') method = 'cash';
+    else if (checkoutData.payment_method === 'Chuyển khoản' || checkoutData.payment_method === 'bank_transfer') method = 'bank_transfer';
+    else method = checkoutData.payment_method.toLowerCase();
+
+    const { error: payError } = await supabase.from('booking_payment').insert({
+      payment_id: paymentId,
+      booking_id: bookingId,
+      amount: checkoutData.total_paid,
+      method: method,
+      type: 'final',
+      status: 'success',
+      gateway_transaction_code: `TXN-${bookingId}-FINAL`,
+      paid_at: new Date().toISOString(),
+    });
+    if (payError) {
+      console.error('booking_payment insert failed:', payError);
+    }
+  }
+
+  if (booking.customer_id && newTotalBill) {
     const { data: customer, error: cError } = await supabase
       .from('customer')
       .select('total_spent')
       .eq('customer_id', booking.customer_id)
       .single();
-    
+
     if (cError) throw cError;
-    
-    const newTotal = (customer.total_spent || 0) + booking.total_bill;
+
+    const newTotal = (customer.total_spent || 0) + newTotalBill;
     await supabase
       .from('customer')
       .update({ total_spent: newTotal })
@@ -124,9 +187,9 @@ export const checkInBooking = async (booking, checkInData) => {
   // 1. Cập nhật booking (status = serving, total_bill)
   const { error: bError } = await supabase
     .from('booking')
-    .update({ 
-      status: 'serving', 
-      total_bill: checkInData.total_bill 
+    .update({
+      status: 'serving',
+      total_bill: checkInData.total_bill
     })
     .eq('booking_id', booking.booking_id);
   if (bError) throw bError;
@@ -155,11 +218,11 @@ export const checkInBooking = async (booking, checkInData) => {
     const mainSrv = booking.booking_service?.[0];
     const groomer_id = mainSrv?.groomer_id || null;
     const table_id = mainSrv?.table_id || null;
-    
+
     // Nếu không có mainSrv (vd Hotel), dùng tạm thời gian hiện tại
     const now = new Date();
     const slot_start = mainSrv?.slot_start || now.toISOString();
-    const slot_end = mainSrv?.slot_end || new Date(now.getTime() + 90*60000).toISOString();
+    const slot_end = mainSrv?.slot_end || new Date(now.getTime() + 90 * 60000).toISOString();
 
     const servicesToInsert = checkInData.addons.map((addon, index) => ({
       booking_service_id: `BSV${(nextSrvId + index).toString().padStart(5, '0')}`,
@@ -186,6 +249,30 @@ export const reportIncident = async (bookingId, description) => {
   // TODO: insert vào bảng incident khi sẵn sàng
 };
 
+export const extendHotelStay = async (bookingId, { newCheckoutDate, newRoomId, extraFee }) => {
+  // Cập nhật ngày checkout (và đổi phòng nếu có)
+  const updateData = { check_out_date: new Date(newCheckoutDate).toISOString() };
+  if (newRoomId) updateData.room_id = newRoomId;
+
+  const { error: roomErr } = await supabase
+    .from('booking_room')
+    .update(updateData)
+    .eq('booking_id', bookingId);
+  
+  if (roomErr) throw roomErr;
+
+  // Cộng thêm phụ phí vào tổng tiền
+  if (extraFee > 0) {
+    const { data: bData } = await supabase.from('booking').select('total_bill').eq('booking_id', bookingId).single();
+    if (bData) {
+      await supabase
+        .from('booking')
+        .update({ total_bill: (bData.total_bill || 0) + extraFee })
+        .eq('booking_id', bookingId);
+    }
+  }
+};
+
 // Hoàn thành grooming → chuyển sang COMPLETED_SERVICE
 export const completeGrooming = async (bookingId, groomerData) => {
   await updateBookingStatus(bookingId, 'COMPLETED_SERVICE');
@@ -193,8 +280,36 @@ export const completeGrooming = async (bookingId, groomerData) => {
 
 // Ghi nhật ký chăm sóc (care_log)
 export const addDiaryEntry = async (bookingId, entryData) => {
-  // TODO: insert vào bảng care_log khi sẵn sàng
-  console.log('addDiaryEntry:', bookingId, entryData);
+  // Sinh mã care_log_id tự động
+  const { data: lastLog } = await supabase
+    .from('care_log')
+    .select('care_log_id')
+    .like('care_log_id', 'CAR%')
+    .order('care_log_id', { ascending: false })
+    .limit(1);
+
+  let nextId = 1;
+  if (lastLog && lastLog.length > 0 && lastLog[0].care_log_id) {
+    const numPart = parseInt(lastLog[0].care_log_id.replace('CAR', ''), 10);
+    if (!isNaN(numPart)) nextId = numPart + 1;
+  }
+  const care_log_id = `CAR${nextId.toString().padStart(5, '0')}`;
+
+  const { error } = await supabase
+    .from('care_log')
+    .insert([{
+      care_log_id,
+      booking_id: bookingId,
+      staff_id: 'STF00002', // Tạm thời dùng staff cứng vì chưa có context auth
+      food_amount: entryData.food,
+      playtime_minutes: entryData.playtime,
+      status: entryData.status,
+      note: entryData.notes,
+      issues_note: entryData.issues,
+      photos: entryData.photos,
+    }]);
+
+  if (error) throw error;
 };
 
 export const searchCustomerWithPetsByPhone = async (phone) => {
@@ -230,7 +345,7 @@ export const searchCustomerWithPetsByPhone = async (phone) => {
         pets: petData || []
       };
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error searching customer by phone:', error);
@@ -434,7 +549,7 @@ export const createRealBooking = async ({ customerData, petData, bookingDetails,
       const { error: rmError } = await supabase
         .from('booking_room')
         .insert(roomToInsert);
-      
+
       if (rmError) throw rmError;
     }
 

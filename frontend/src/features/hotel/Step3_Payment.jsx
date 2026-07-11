@@ -30,7 +30,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   const [phase, setPhase] = useState('review');
   const [room, setRoom] = useState(null);
   const [submitError, setSubmitError] = useState('');
-  const [orderId, setOrderId] = useState(() => `PH-${Math.floor(10000 + Math.random() * 89999)}`);
+  const [orderId, setOrderId] = useState('');
 
   useEffect(() => {
     getRoomById(booking.roomId).then(setRoom).catch((e) => console.error(e));
@@ -61,21 +61,21 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
         }
       };
 
-      await createHotelBooking({
+      const result = await createHotelBooking({
         booking: finalBookingData,
         room: room,
         totalBill: total,
         taxAmount: tax,
-        orderId: orderId,
         specialNotesText: buildSpecialNotesText(booking)
       });
+
+      setOrderId(result.booking.booking_id);
 
       setPhase('done');
       onConfirmed?.();
     } catch (e) {
       console.error(e);
       setSubmitError(e.message || 'Có lỗi khi lưu đơn đặt phòng. Vui lòng thử lại.');
-      setOrderId(`PH-${Math.floor(10000 + Math.random() * 89999)}`);
       setPhase('review');
     }
   };

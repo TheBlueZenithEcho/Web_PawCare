@@ -124,7 +124,7 @@ export default function ReceptionTable() {
 
   const handleCheckoutComplete = async (checkoutData) => {
     if (selectedBooking) {
-      await checkoutBookingPayment(selectedBooking.booking_id);
+      await checkoutBookingPayment(selectedBooking.booking_id, checkoutData);
       await loadData();
       setActiveTab('PAID');
     }

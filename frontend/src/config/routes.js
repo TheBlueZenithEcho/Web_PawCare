@@ -1,12 +1,3 @@
-/**
- * ROUTES – Trung tâm quản lý tất cả đường dẫn (path) của ứng dụng.
- * Dùng các hằng số này thay vì hard-code chuỗi string rải rác trong code.
- *
- * Cách dùng:
- *   import { ROUTES } from '@/config/routes';
- *   router.push(ROUTES.CUSTOMER.LANDING);
- */
-
 export const ROUTES = {
   // ── Trang gốc ──────────────────────────────────────────────────────────────
   ROOT: '/',

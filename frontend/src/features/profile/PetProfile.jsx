@@ -7,9 +7,9 @@ import { calculateAge } from '../../utils/hotelRules';
 import AccountLayout from '../../components/profile/ProfileSidebar';
 
 const SPECIES_OPTIONS = [
-  { id: '', label: 'All Species' },
-  { id: 'dog', label: 'Dog' },
-  { id: 'cat', label: 'Cat' },
+  { id: '', label: 'Tất cả loài' },
+  { id: 'dog', label: 'Chó' },
+  { id: 'cat', label: 'Mèo' },
 ];
 
 export default function MyPetsPage() {
@@ -80,8 +80,8 @@ export default function MyPetsPage() {
         <>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-wood-bark">My Pets</h1>
-              <p className="text-wood-bark/60 mt-1">Manage your beloved family members and their care schedule.</p>
+              <h1 className="text-3xl font-bold text-wood-bark">Thú cưng của tôi</h1>
+              <p className="text-wood-bark/60 mt-1">Quản lý các thành viên gia đình yêu quý và lịch trình chăm sóc của chúng.</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -89,7 +89,7 @@ export default function MyPetsPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name..."
+                  placeholder="Tìm theo tên..."
                   className="pl-9 pr-4 py-2.5 rounded-full bg-white shadow-sm text-sm outline-none focus:ring-2 focus:ring-understory/30"
                 />
               </div>
@@ -106,7 +106,7 @@ export default function MyPetsPage() {
                 onClick={() => setShowAddForm(true)}
                 className="flex items-center gap-1.5 rounded-full bg-understory text-white px-5 py-2.5 text-sm font-bold hover:bg-wood-bark transition-colors whitespace-nowrap"
               >
-                <Plus size={15} /> Add Pet
+                <Plus size={15} /> Thêm thú cưng
               </button>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function MyPetsPage() {
                 <span className="w-10 h-10 rounded-full bg-fresh-grown/30 flex items-center justify-center">
                   <Plus size={18} />
                 </span>
-                Grow the Family?
+                Thêm thành viên mới?
               </button>
             </div>
           )}
@@ -157,28 +157,28 @@ function PetCard({ pet, upcoming }) {
         <div>
           <h3 className="text-xl font-bold text-wood-bark">{pet.pet_name}</h3>
           <p className="text-sm text-wood-bark/50">
-            {pet.species === 'dog' ? 'Dog' : 'Cat'}{pet.breed ? ` • ${pet.breed}` : ''}
+            {pet.species === 'dog' ? 'Chó' : 'Mèo'}{pet.breed ? ` • ${pet.breed}` : ''}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-sm border-y border-wood-bark/10 py-3">
-        <MiniStat label="Gender" value={pet.gender ? (pet.gender === 'male' ? 'Male' : 'Female') : '—'} />
-        <MiniStat label="Age" value={age != null ? `${age} Years` : '—'} />
-        <MiniStat label="Weight" value={pet.weight ? `${pet.weight} kg` : '—'} />
+        <MiniStat label="Giới tính" value={pet.gender ? (pet.gender === 'male' ? 'Đực' : 'Cái') : '—'} />
+        <MiniStat label="Tuổi" value={age != null ? `${age} Tuổi` : '—'} />
+        <MiniStat label="Cân nặng" value={pet.weight ? `${pet.weight} kg` : '—'} />
       </div>
 
       <div className="flex flex-col gap-2 text-sm text-wood-bark/70">
         {upcoming && (
           <div className="flex items-center gap-2">
             <Calendar size={14} className="text-understory" />
-            Upcoming: <strong>{upcoming.label}</strong> — {formatUpcomingDate(upcoming.date)}
+            Sắp tới: <strong>{upcoming.label}</strong> — {formatUpcomingDate(upcoming.date)}
           </div>
         )}
         {pet.dob && (
           <div className="flex items-center gap-2">
             <Cake size={14} className="text-understory" />
-            Birthday: {new Date(pet.dob).toLocaleDateString('vi-VN')}
+            Ngày sinh: {new Date(pet.dob).toLocaleDateString('vi-VN')}
           </div>
         )}
       </div>
@@ -187,7 +187,7 @@ function PetCard({ pet, upcoming }) {
         href={`/customer/profile/thu_cung/${pet.pet_id}`}
         className="self-start rounded-full border border-wood-bark/20 px-5 py-2 text-sm font-semibold text-wood-bark hover:border-understory hover:text-understory transition-colors text-center"
       >
-        View Details
+        Xem chi tiết
       </a>
     </div>
   );
@@ -235,7 +235,7 @@ function AddPetModal({ customerId, onClose, onCreated }) {
       onCreated();
     } catch (e) {
       console.error(e);
-      setError('Không tạo được hồ sơ thú cưng. Thử lại sau.');
+      setError(e.message || 'Không tạo được hồ sơ thú cưng. Thử lại sau.');
     } finally {
       setSaving(false);
     }
@@ -245,7 +245,7 @@ function AddPetModal({ customerId, onClose, onCreated }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
       <div className="bg-white rounded-3xl p-6 max-w-md w-full flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-wood-bark">Register a New Pet</h3>
+          <h3 className="text-lg font-bold text-wood-bark">Thêm thú cưng mới</h3>
           <button onClick={onClose} className="text-wood-bark/40 hover:text-wood-bark">
             <X size={18} />
           </button>
@@ -253,18 +253,18 @@ function AddPetModal({ customerId, onClose, onCreated }) {
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <LabeledInput label="Pet Name" value={form.pet_name} onChange={(v) => update({ pet_name: v })} />
+        <LabeledInput label="Tên thú cưng" value={form.pet_name} onChange={(v) => update({ pet_name: v })} />
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Species</label>
+            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Loài</label>
             <select value={form.species} onChange={(e) => update({ species: e.target.value })} className="w-full rounded-xl bg-fresh-grown/20 px-3 py-2.5 text-sm outline-none">
-              <option value="dog">Dog</option>
-              <option value="cat">Cat</option>
+              <option value="dog">Chó</option>
+              <option value="cat">Mèo</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Size</label>
+            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Kích cỡ</label>
             <select value={form.size} onChange={(e) => update({ size: e.target.value })} className="w-full rounded-xl bg-fresh-grown/20 px-3 py-2.5 text-sm outline-none">
               {['S', 'M', 'L', 'XL'].map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -272,17 +272,17 @@ function AddPetModal({ customerId, onClose, onCreated }) {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <LabeledInput label="Breed" value={form.breed} onChange={(v) => update({ breed: v })} />
-          <LabeledInput label="Weight (kg)" type="number" value={form.weight} onChange={(v) => update({ weight: v })} />
+          <LabeledInput label="Giống loài" value={form.breed} onChange={(v) => update({ breed: v })} />
+          <LabeledInput label="Cân nặng (kg)" type="number" value={form.weight} onChange={(v) => update({ weight: v })} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <LabeledInput label="Ngày sinh" type="date" value={form.dob} onChange={(v) => update({ dob: v })} />
           <div>
-            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Gender</label>
+            <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Giới tính</label>
             <select value={form.gender} onChange={(e) => update({ gender: e.target.value })} className="w-full rounded-xl bg-fresh-grown/20 px-3 py-2.5 text-sm outline-none">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
+              <option value="male">Đực</option>
+              <option value="female">Cái</option>
             </select>
           </div>
         </div>

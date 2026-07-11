@@ -2,32 +2,53 @@
 
 Dự án Hệ thống quản lý và Spa dành cho thú cưng (Paw Care).
 
-## 🚀 Hướng dẫn Cài đặt & Chạy dự án
-
-1. **Cài đặt thư viện:**
-   ```bash
-   npm install
-   ```
-2. **Chạy dự án ở chế độ phát triển (development):**
-   ```bash
-   npm run dev
-   ```
-3. Truy cập vào [http://localhost:3000](http://localhost:3000) trên trình duyệt để xem kết quả.
-
-## 🗂 Cấu trúc Dữ liệu (Lưu ý cho người kế tiếp)
-
-- Hiện tại, toàn bộ hệ thống đang sử dụng **Mock Data** (dữ liệu giả lập) để phục vụ cho giao diện Frontend.
-- Dữ liệu giả lập này nằm tại thư mục `data/` (ví dụ: `ordersApi.js`, `bookings.js`, `customersApi.js`, v.v.).
-- Các hàm gọi API (như fetch, create, update) hiện đang giả lập bằng cách sửa đổi trực tiếp vào biến lưu trong bộ nhớ (in-memory) và dùng `setTimeout` để mô phỏng độ trễ của mạng.
-- **Để đưa dự án vào thực tế (Production):** Bạn sẽ cần xây dựng Backend API thực sự (NodeJS/Python/PHP...) và kết nối CSDL, sau đó thay thế logic trong các file ở thư mục `data/` thành các lệnh `fetch` hoặc `axios` thực tế gọi đến API Backend đó.
+Dự án được chia làm 2 phần chính: **Frontend** và **Backend**.
 
 ## 🛠 Công nghệ sử dụng
 
-- **Next.js** (Pages Router)
-- **React**
-- **Tailwind CSS** (cho việc style giao diện - *nếu có*)
-- Và các thư viện UI khác.
+### Frontend
+- **Next.js** (Phiên bản 16)
+- **React** (Phiên bản 19)
+- **Tailwind CSS** (Phiên bản 4)
+- **Supabase**
+- **Lucide React** (Icon)
+
+### Backend
+- **Node.js** & **Express**
+- **PostgreSQL** (Sử dụng thư viện `pg`)
+- **Nodemon** (Môi trường dev)
+
+---
+
+## 🚀 Hướng dẫn Cài đặt & Chạy dự án
+
+Bạn cần mở 2 terminal (cửa sổ dòng lệnh) riêng biệt để chạy song song Frontend và Backend.
+
+### 1. Chạy Backend (API Server)
+Mở terminal 1 và chạy các lệnh sau:
+```bash
+cd backend
+npm install
+npm run dev
+```
+Backend server sẽ chạy bằng `nodemon` (mặc định tại cổng do bạn config, ví dụ: http://localhost:5000).
+
+### 2. Chạy Frontend (Web UI)
+Mở terminal 2 và chạy các lệnh sau:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Truy cập vào [http://localhost:3000](http://localhost:3000) trên trình duyệt để xem trang web.
+
+---
+
+## 🗂 Cấu trúc Dự án
+
+- `frontend/`: Chứa mã nguồn giao diện web (Next.js). Các file môi trường (`.env.local`) cần được cấu hình tại đây để kết nối với Backend hoặc Supabase.
+- `backend/`: Chứa mã nguồn server API (Express + PostgreSQL).
 
 ## 📦 Deploy
-
-Dự án có thể dễ dàng được deploy lên [Vercel](https://vercel.com/) hoặc bất kỳ nền tảng nào hỗ trợ Node.js/Next.js.
+- **Frontend**: Có thể dễ dàng được deploy lên [Vercel](https://vercel.com/) hoặc Netlify.
+- **Backend**: Có thể deploy lên các dịch vụ như Render, Railway, Fly.io, hoặc VPS tự quản.

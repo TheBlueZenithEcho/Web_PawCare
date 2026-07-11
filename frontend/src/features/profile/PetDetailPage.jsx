@@ -8,7 +8,7 @@ import { calculateAge } from '../../utils/hotelRules';
 import { formatVND } from '../../utils/format';
 import AccountLayout from '../../components/profile/ProfileSidebar';
 
-const TABS = ['Overview', 'Health Record', 'Appointments', 'Hotel Stays'];
+const TABS = ['Tổng quan', 'Sức khỏe', 'Lịch hẹn', 'Lưu trú'];
 
 export default function PetDetailPage() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function PetDetailPage() {
   const [groomingBookings, setGroomingBookings] = useState([]);
   const [hotelBookings, setHotelBookings] = useState([]);
   const [loadingPet, setLoadingPet] = useState(true);
-  const [activeTab, setActiveTab] = useState('Overview');
+  const [activeTab, setActiveTab] = useState('Tổng quan');
   const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
@@ -101,12 +101,12 @@ export default function PetDetailPage() {
               </div>
 
               <div className="mt-6">
-                {activeTab === 'Overview' && (
+                {activeTab === 'Tổng quan' && (
                   <OverviewTab pet={pet} healthRecords={healthRecords} groomingBookings={groomingBookings} hotelBookings={hotelBookings} />
                 )}
-                {activeTab === 'Health Record' && <HealthRecordTab records={healthRecords} />}
-                {activeTab === 'Appointments' && <AppointmentsTab bookings={groomingBookings} />}
-                {activeTab === 'Hotel Stays' && <HotelStaysTab bookings={hotelBookings} />}
+                {activeTab === 'Sức khỏe' && <HealthRecordTab records={healthRecords} />}
+                {activeTab === 'Lịch hẹn' && <AppointmentsTab bookings={groomingBookings} />}
+                {activeTab === 'Lưu trú' && <HotelStaysTab bookings={hotelBookings} />}
               </div>
 
               {showEdit && (
@@ -141,18 +141,18 @@ function PetHeaderCard({ pet, onEdit }) {
 
       <div className="bg-white rounded-3xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-wood-bark">Pet Details</h3>
+          <h3 className="font-bold text-wood-bark">Chi tiết thú cưng</h3>
           <button onClick={onEdit} className="flex items-center gap-1.5 text-sm font-semibold text-understory hover:text-wood-bark">
-            <Pencil size={14} /> Edit Profile
+            <Pencil size={14} /> Sửa hồ sơ
           </button>
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <DetailRow label="Species" value={pet.species === 'dog' ? 'Dog' : 'Cat'} />
-          <DetailRow label="Breed" value={pet.breed || '—'} />
-          <DetailRow label="Age" value={age != null ? `${age} Years` : '—'} />
-          <DetailRow label="Weight" value={pet.weight ? `${pet.weight} kg` : '—'} />
-          <DetailRow label="Birthday" value={pet.dob ? new Date(pet.dob).toLocaleDateString('vi-VN') : '—'} />
-          <DetailRow label="Owner" value={pet.customer ? `${pet.customer.first_name} ${pet.customer.last_name}` : '—'} />
+          <DetailRow label="Loài" value={pet.species === 'dog' ? 'Chó' : 'Mèo'} />
+          <DetailRow label="Giống loài" value={pet.breed || '—'} />
+          <DetailRow label="Tuổi" value={age != null ? `${age} Tuổi` : '—'} />
+          <DetailRow label="Cân nặng" value={pet.weight ? `${pet.weight} kg` : '—'} />
+          <DetailRow label="Ngày sinh" value={pet.dob ? new Date(pet.dob).toLocaleDateString('vi-VN') : '—'} />
+          <DetailRow label="Chủ sở hữu" value={pet.customer ? `${pet.customer.first_name} ${pet.customer.last_name}` : '—'} />
         </div>
       </div>
     </div>
@@ -173,7 +173,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid sm:grid-cols-2 gap-6">
-        <InfoCard icon={Heart} title="Personality">
+        <InfoCard icon={Heart} title="Tính cách">
           {pet.behavior_notes ? (
             <p className="text-sm text-wood-bark/70 italic">&ldquo;{pet.behavior_notes}&rdquo;</p>
           ) : (
@@ -181,10 +181,10 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
           )}
         </InfoCard>
 
-        <InfoCard icon={ShieldCheck} title="Health Essentials">
+        <InfoCard icon={ShieldCheck} title="Thông tin sức khỏe">
           {pet.allergy_notes ? (
             <p className="text-sm">
-              <span className="font-semibold text-red-500">Allergies: </span>
+              <span className="font-semibold text-red-500">Dị ứng: </span>
               <span className="text-wood-bark/70">{pet.allergy_notes}</span>
             </p>
           ) : (
@@ -193,7 +193,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
         </InfoCard>
       </div>
 
-      <InfoCard icon={Calendar} title="Weight History">
+      <InfoCard icon={Calendar} title="Lịch sử cân nặng">
         {healthRecords.filter((r) => r.weight).length > 0 ? (
           <WeightChart records={healthRecords.filter((r) => r.weight)} />
         ) : (
@@ -202,7 +202,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
       </InfoCard>
 
       <div>
-        <h3 className="font-bold text-wood-bark mb-3">Scheduled Care</h3>
+        <h3 className="font-bold text-wood-bark mb-3">Lịch trình chăm sóc</h3>
         {upcomingGrooming.length === 0 ? (
           <p className="text-sm text-wood-bark/40">Chưa có lịch hẹn sắp tới.</p>
         ) : (
@@ -216,7 +216,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
                     {bs.groomer ? ` · ${bs.groomer.first_name} ${bs.groomer.last_name}` : ''}
                   </p>
                 </div>
-                <span className="text-xs font-bold bg-fresh-grown/50 text-understory px-3 py-1 rounded-full">Confirmed</span>
+                <span className="text-xs font-bold bg-fresh-grown/50 text-understory px-3 py-1 rounded-full">Đã xác nhận</span>
               </div>
             ))}
           </div>
@@ -224,7 +224,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
       </div>
 
       <div>
-        <h3 className="font-bold text-wood-bark mb-3">Past Hotel Stays</h3>
+        <h3 className="font-bold text-wood-bark mb-3">Lịch sử lưu trú</h3>
         {pastHotelStays.length === 0 ? (
           <p className="text-sm text-wood-bark/40">Chưa có lịch sử lưu trú.</p>
         ) : (
@@ -234,7 +234,7 @@ function OverviewTab({ pet, healthRecords, groomingBookings, hotelBookings }) {
                 <div className="flex items-center gap-3">
                   <BedDouble size={18} className="text-understory" />
                   <div>
-                    <p className="font-semibold text-wood-bark">Room {br.room?.room_id}</p>
+                    <p className="font-semibold text-wood-bark">Phòng {br.room?.room_id}</p>
                     <p className="text-sm text-wood-bark/50">
                       {new Date(br.check_in_date).toLocaleDateString('vi-VN')} → {new Date(br.check_out_date).toLocaleDateString('vi-VN')}
                     </p>
@@ -304,7 +304,7 @@ function HotelStaysTab({ bookings }) {
           <div className="flex items-center gap-3">
             <BedDouble size={18} className="text-understory" />
             <div>
-              <p className="font-semibold text-wood-bark">Room {br.room?.room_id}</p>
+              <p className="font-semibold text-wood-bark">Phòng {br.room?.room_id}</p>
               <p className="text-sm text-wood-bark/50">
                 {new Date(br.check_in_date).toLocaleDateString('vi-VN')} → {new Date(br.check_out_date).toLocaleDateString('vi-VN')}
               </p>
@@ -388,19 +388,19 @@ function EditPetModal({ pet, onClose, onSaved }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
       <div className="bg-white rounded-3xl p-6 max-w-md w-full flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-wood-bark">Edit {pet.pet_name}</h3>
+          <h3 className="text-lg font-bold text-wood-bark">Sửa thông tin {pet.pet_name}</h3>
           <button onClick={onClose} className="text-wood-bark/40 hover:text-wood-bark">
             <X size={18} />
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <LabeledInput label="Breed" value={form.breed} onChange={(v) => setForm((f) => ({ ...f, breed: v }))} />
-          <LabeledInput label="Weight (kg)" type="number" value={form.weight} onChange={(v) => setForm((f) => ({ ...f, weight: v }))} />
+          <LabeledInput label="Giống loài" value={form.breed} onChange={(v) => setForm((f) => ({ ...f, breed: v }))} />
+          <LabeledInput label="Cân nặng (kg)" type="number" value={form.weight} onChange={(v) => setForm((f) => ({ ...f, weight: v }))} />
         </div>
         <LabeledInput label="Ngày sinh" type="date" value={form.dob} onChange={(v) => setForm((f) => ({ ...f, dob: v }))} />
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Personality (behavior_notes)</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Tính cách (ghi chú hành vi)</label>
           <textarea
             rows={2}
             value={form.behavior_notes}
@@ -409,7 +409,7 @@ function EditPetModal({ pet, onClose, onSaved }) {
           />
         </div>
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Allergies</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Dị ứng</label>
           <textarea
             rows={2}
             value={form.allergy_notes}

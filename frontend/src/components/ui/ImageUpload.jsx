@@ -6,23 +6,24 @@ export default function ImageUpload({ images = [], onChange, maxImages = 5, labe
   
   const imageArray = Array.isArray(images) ? images : (images ? [images] : []);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     
-    files.forEach(file => {
-      // Đảm bảo không quá số lượng tối đa
-      if (imageArray.length >= maxImages) return;
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange((prevImages) => {
-          const prevArray = Array.isArray(prevImages) ? prevImages : (prevImages ? [prevImages] : []);
-          if (prevArray.length >= maxImages) return prevArray;
-          return [...prevArray, reader.result];
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+    const newImages = [];
+    for (let i = 0; i < files.length; i++) {
+      if (imageArray.length + newImages.length >= maxImages) break;
+      const file = files[i];
+      const result = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+      newImages.push(result);
+    }
+    
+    if (newImages.length > 0) {
+      onChange([...imageArray, ...newImages]);
+    }
     
     // Reset input value to allow selecting the same file again if removed
     if (fileInputRef.current) {

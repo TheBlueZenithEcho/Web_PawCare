@@ -16,7 +16,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedRules, setSelectedRules] = useState([]);
   const [submitError, setSubmitError] = useState('');
-  const [orderId, setOrderId] = useState(() => `PC-${Math.floor(10000 + Math.random() * 89999)}`);
+  const [orderId, setOrderId] = useState('');
 
   useEffect(() => {
     const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
@@ -41,17 +41,16 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   const finalize = async () => {
     setSubmitError('');
     try {
-      await createGroomingBooking({
+      const result = await createGroomingBooking({
         booking: { ...booking, durationMinutes: totalDurationMinutes },
         totalBill: total,
-        orderId,
       });
+      setOrderId(result.booking.booking_id);
       setPhase('done');
       onConfirmed?.();
     } catch (e) {
       console.error(e);
       setSubmitError(e.message || 'Có lỗi khi lưu đơn đặt lịch. Vui lòng thử lại.');
-      setOrderId(`PC-${Math.floor(10000 + Math.random() * 89999)}`);
       setPhase('review');
     }
   };

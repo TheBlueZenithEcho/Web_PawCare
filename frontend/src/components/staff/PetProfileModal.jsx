@@ -10,6 +10,17 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
   const [isEditing, setIsEditing] = useState(false);
   const [petForm, setPetForm] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+  
+  // Mock dữ liệu Bệnh án
+  const [localHealth, setLocalHealth] = useState({
+    skin: '',
+    coat: '',
+    ear: '',
+    eye: '',
+    nail: '',
+    wound: ''
+  });
+  const [healthForm, setHealthForm] = useState(null);
 
   if (!localPet) return null;
 
@@ -137,6 +148,7 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                     try {
                       await updatePet(petForm.pet_id, petForm);
                       setLocalPet(petForm);
+                      setLocalHealth(healthForm);
                       setIsEditing(false);
                       handleAction('Đã lưu hồ sơ thú cưng!');
                       if (onSuccess) onSuccess();
@@ -149,6 +161,9 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
                     onClick={() => {
                       setPetForm({
                         ...localPet
+                      });
+                      setHealthForm({
+                        ...localHealth
                       });
                       setIsEditing(true);
                     }}
@@ -203,64 +218,111 @@ export default function PetProfileModal({ pet, owner, bookings, onClose, onSucce
             <div className="space-y-6">
 
               {/* Cảnh báo đặc biệt (Tình trạng lông, móng, bệnh lý...) */}
-              {isEditing ? (
-                <div className="bg-red-50/50 p-4 rounded-xl border border-red-200 shadow-sm flex gap-3">
-                  <ShieldAlert size={24} className="text-red-500 shrink-0" />
-                  <div className="w-full">
-                    <h3 className="font-bold text-red-800 mb-1">Lưu ý Đặc biệt / Bệnh lý</h3>
-                    <textarea rows={2} className="w-full px-3 py-2 border border-red-200 bg-white rounded-lg text-red-700 font-medium resize-none" value={petForm.special_notes} onChange={e => setPetForm({ ...petForm, special_notes: e.target.value })} placeholder="Nhập lưu ý đặc biệt..." />
-                  </div>
-                </div>
-              ) : (
-                localPet.special_notes && localPet.special_notes !== 'Không' && (
-                  <div className="bg-red-50/50 p-4 rounded-xl border border-red-200 shadow-sm flex gap-3">
-                    <ShieldAlert size={24} className="text-red-500 shrink-0" />
-                    <div>
-                      <h3 className="font-bold text-red-800 mb-1">Lưu ý Đặc biệt / Bệnh lý</h3>
-                      <p className="text-red-700 font-medium leading-relaxed">
-                        {localPet.special_notes}
-                      </p>
-                    </div>
-                  </div>
-                )
-              )}
-
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-3 gap-6">
                 {/* Hành vi & Tính cách */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3 text-lacustral">
-                    <Activity size={20} className="text-blue-500" />
-                    <h3 className="font-bold">Hành vi & Tính cách</h3>
-                  </div>
+                <div>
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Hành vi & Tích cách</p>
                   {isEditing ? (
-                    <textarea rows={3} className="w-full px-3 py-2 border border-blue-200 bg-blue-50/50 rounded-lg text-gray-700 font-medium resize-none" value={petForm.behavior_notes} onChange={e => setPetForm({ ...petForm, behavior_notes: e.target.value })} placeholder="Nhập hành vi..." />
+                    <textarea rows={1} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium resize-none focus:outline-none focus:ring-1 focus:ring-gray-300" value={petForm.behavior_notes} onChange={e => setPetForm({ ...petForm, behavior_notes: e.target.value })} placeholder="Nhập hành vi..." />
                   ) : (
-                    <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100/50">
-                      <p className="text-gray-700 font-medium leading-relaxed">
-                        {localPet.behavior_notes || 'Chưa có ghi chú về hành vi.'}
-                      </p>
+                    <div className="px-3 py-2.5 bg-gray-50/50 rounded-lg">
+                      <p className="text-gray-700 font-medium">{localPet.behavior_notes || 'Chưa có ghi chú'}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Dị ứng */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3 text-lacustral">
-                    <AlertTriangle size={20} className="text-orange-500" />
-                    <h3 className="font-bold">Tiền sử Dị ứng</h3>
-                  </div>
+                <div>
+                  <p className="text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertTriangle size={14}/> Dị ứng</p>
                   {isEditing ? (
-                    <textarea rows={3} className="w-full px-3 py-2 border border-orange-200 bg-orange-50/50 rounded-lg text-orange-800 font-medium resize-none" value={petForm.allergy_notes} onChange={e => setPetForm({ ...petForm, allergy_notes: e.target.value })} placeholder="Nhập dị ứng..." />
+                    <textarea rows={1} className="w-full px-3 py-2 bg-orange-50/30 border border-orange-100 rounded-lg text-orange-800 font-medium resize-none focus:outline-none focus:ring-1 focus:ring-orange-300" value={petForm.allergy_notes} onChange={e => setPetForm({ ...petForm, allergy_notes: e.target.value })} placeholder="Nhập dị ứng..." />
                   ) : (
-                    <div className={`p-4 rounded-lg border ${localPet.allergy_notes && localPet.allergy_notes !== 'Không'
-                        ? 'bg-orange-50 border-orange-200 text-orange-800 font-semibold'
-                        : 'bg-gray-50 border-gray-100 text-gray-500'
-                      }`}>
-                      <p className="leading-relaxed">
-                        {localPet.allergy_notes || 'Chưa ghi nhận dị ứng.'}
-                      </p>
+                    <div className="px-3 py-2.5 bg-orange-50/30 rounded-lg">
+                      <p className="text-orange-800 font-medium">{localPet.allergy_notes || 'Không có'}</p>
                     </div>
                   )}
+                </div>
+
+                {/* Lưu ý Đặc biệt */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Lưu ý Đặc biệt</p>
+                  {isEditing ? (
+                    <textarea rows={1} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium resize-none focus:outline-none focus:ring-1 focus:ring-gray-300" value={petForm.special_notes} onChange={e => setPetForm({ ...petForm, special_notes: e.target.value })} placeholder="Lưu ý đặc biệt..." />
+                  ) : (
+                    <div className="px-3 py-2.5 bg-gray-50/50 rounded-lg">
+                      <p className="text-gray-700 font-medium">{localPet.special_notes || 'Không có'}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bệnh án / Kiểm tra sức khỏe */}
+              <div className="mt-8">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <Stethoscope size={20} />
+                    <h3 className="font-bold">Bệnh án / Kiểm tra sức khỏe</h3>
+                  </div>
+                  <span className="text-xs font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
+                    {new Date().toISOString().split('T')[0]}
+                  </span>
+                </div>
+                
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm grid grid-cols-3 gap-y-6 gap-x-8">
+                  {/* Skin */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tình trạng da</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Bình thường" value={healthForm.skin} onChange={e => setHealthForm({...healthForm, skin: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.skin || 'Bình thường'}</p>
+                    )}
+                  </div>
+                  {/* Coat */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tình trạng lông</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Bình thường" value={healthForm.coat} onChange={e => setHealthForm({...healthForm, coat: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.coat || 'Bình thường'}</p>
+                    )}
+                  </div>
+                  {/* Ear */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tình trạng tai</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Bình thường" value={healthForm.ear} onChange={e => setHealthForm({...healthForm, ear: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.ear || 'Bình thường'}</p>
+                    )}
+                  </div>
+                  {/* Eye */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tình trạng mắt</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Bình thường" value={healthForm.eye} onChange={e => setHealthForm({...healthForm, eye: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.eye || 'Bình thường'}</p>
+                    )}
+                  </div>
+                  {/* Nail */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tình trạng móng</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Bình thường" value={healthForm.nail} onChange={e => setHealthForm({...healthForm, nail: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.nail || 'Bình thường'}</p>
+                    )}
+                  </div>
+                  {/* Wound */}
+                  <div>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Mô tả vết thương</p>
+                    {isEditing ? (
+                      <input className="w-full px-2 py-1.5 border-b border-gray-200 focus:border-green-500 outline-none text-sm text-gray-700 font-medium" placeholder="Không" value={healthForm.wound} onChange={e => setHealthForm({...healthForm, wound: e.target.value})} />
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">{localHealth.wound || 'Không'}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

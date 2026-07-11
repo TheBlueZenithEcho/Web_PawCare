@@ -5,9 +5,9 @@ import { supabase } from '../../services/supabase/client';
 import Header from '../layout/Header'
 
 const NAV_ITEMS = [
-  { label: 'My Profile', href: '/customer/profile/tai_khoan', icon: User },
-  { label: 'My Pets', href: '/customer/profile/thu_cung', icon: PawPrint },
-  { label: 'Booking History', href: '/customer/profile/lich_su_dat', icon: CalendarClock },
+  { label: 'Hồ sơ của tôi', href: '/customer/profile/tai_khoan', icon: User },
+  { label: 'Thú cưng của tôi', href: '/customer/profile/thu_cung', icon: PawPrint },
+  { label: 'Lịch sử đặt lịch', href: '/customer/profile/lich_su_dat', icon: CalendarClock },
 ];
 
 export default function ProfileSidebar({ customer, loading, notLoggedIn, children }) {
@@ -101,16 +101,16 @@ export default function ProfileSidebar({ customer, loading, notLoggedIn, childre
 
           <div className="flex flex-col gap-1 mt-auto pt-6 border-t border-wood-bark/10">
             <button className="flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold text-wood-bark/70 hover:bg-white hover:text-wood-bark transition-colors text-left">
-              <Settings size={18} /> Settings
+              <Settings size={18} /> Cài đặt
             </button>
             <button className="flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold text-wood-bark/70 hover:bg-white hover:text-wood-bark transition-colors text-left">
-              <HelpCircle size={18} /> Support
+              <HelpCircle size={18} /> Hỗ trợ
             </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors text-left mt-2"
             >
-              <LogOut size={18} /> Logout
+              <LogOut size={18} /> Đăng xuất
             </button>
           </div>
         </aside>

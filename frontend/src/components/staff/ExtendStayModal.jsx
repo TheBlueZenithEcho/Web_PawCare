@@ -8,6 +8,14 @@ export default function ExtendStayModal({ booking, onClose, onConfirm }) {
   const [checkResult, setCheckResult] = useState(null);
   const [selectedNewRoom, setSelectedNewRoom] = useState('');
 
+  // Trích xuất dữ liệu an toàn từ booking do cấu trúc từ database trả về
+  const petName = booking?.pet?.pet_name || booking?.pet_name || 'Thú cưng';
+  const roomId = booking?.booking_room?.[0]?.room_id || booking?.room_or_slot_id || 'Chưa rõ';
+  const currentCheckout = booking?.booking_room?.[0]?.check_out_date || booking?.checkout_date || '';
+  
+  // Format để cho vào input type="date" (YYYY-MM-DD)
+  const formattedCheckout = currentCheckout ? currentCheckout.split('T')[0] : '';
+
   const handleCheckRoom = () => {
     if (!newCheckoutDate) return;
     setIsChecking(true);
@@ -16,7 +24,7 @@ export default function ExtendStayModal({ booking, onClose, onConfirm }) {
     // Giả lập logic kiểm tra phòng
     setTimeout(() => {
       setIsChecking(false);
-      const current = new Date(booking.checkout_date);
+      const current = new Date(currentCheckout);
       const extend = new Date(newCheckoutDate);
       const diffDays = Math.ceil((extend - current) / (1000 * 60 * 60 * 24));
 
@@ -25,19 +33,19 @@ export default function ExtendStayModal({ booking, onClose, onConfirm }) {
       } else if (diffDays <= 2) {
         setCheckResult({ 
           success: true, 
-          message: `Phòng ${booking.room_or_slot_id} vẫn còn trống trong khoảng thời gian này.`,
-          newRoom: booking.room_or_slot_id,
+          message: `Phòng ${roomId} vẫn còn trống trong khoảng thời gian này.`,
+          newRoom: roomId,
           extraFee: diffDays * 250000 // Giả lập 250k/ngày
         });
       } else {
         // Giả lập kẹt phòng nếu gia hạn quá 2 ngày
-        const suggestRoom = booking.room_or_slot_id === 'Phòng L01' ? 'Phòng M02' : 'Phòng L01';
-        const mockAvailableRooms = ['Phòng M02', 'Phòng M03', 'Phòng L01', 'Phòng L02', 'Phòng VIP 01'].filter(r => r !== booking.room_or_slot_id);
+        const suggestRoom = roomId === 'Phòng L01' ? 'Phòng M02' : 'Phòng L01';
+        const mockAvailableRooms = ['Phòng M02', 'Phòng M03', 'Phòng L01', 'Phòng L02', 'Phòng VIP 01'].filter(r => r !== roomId);
         
         setCheckResult({ 
           success: true, 
           isChanged: true,
-          message: `Phòng ${booking.room_or_slot_id} đã có người đặt. Đề xuất đổi sang ${suggestRoom}.`,
+          message: `Phòng ${roomId} đã có người đặt. Đề xuất đổi sang ${suggestRoom}.`,
           newRoom: suggestRoom,
           availableRooms: mockAvailableRooms,
           extraFee: diffDays * 250000 
@@ -74,11 +82,11 @@ export default function ExtendStayModal({ booking, onClose, onConfirm }) {
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
               <div>
                 <p className="text-xs text-lacustral">Thú cưng</p>
-                <h3 className="font-bold text-understory">{booking.pet_name}</h3>
+                <h3 className="font-bold text-understory">{petName}</h3>
               </div>
               <div className="text-right">
                 <p className="text-xs text-lacustral">Phòng hiện tại</p>
-                <p className="font-bold text-understory">{booking.room_or_slot_id}</p>
+                <p className="font-bold text-understory">{roomId}</p>
               </div>
             </div>
 
@@ -87,7 +95,7 @@ export default function ExtendStayModal({ booking, onClose, onConfirm }) {
                 <label className="block text-xs font-bold text-understory mb-1">Ngày check-out cũ</label>
                 <input 
                   type="date" 
-                  value={booking.checkout_date}
+                  value={formattedCheckout}
                   disabled
                   className="w-full px-3 py-2 text-sm border border-gray-200 bg-gray-100 rounded-lg text-gray-500"
                 />

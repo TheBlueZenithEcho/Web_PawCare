@@ -5,7 +5,7 @@ import SitterDiaryModal from '@/components/staff/SitterDiaryModal';
 import ExtendStayModal from '@/components/staff/ExtendStayModal';
 import AddServiceModal from '@/components/staff/AddServiceModal';
 import EmergencyModal from '@/components/staff/EmergencyModal';
-import { fetchBookings, addDiaryEntry, updateBookingStatus } from '@/services/supabase/supabaseBookingApi';
+import { fetchBookings, addDiaryEntry, updateBookingStatus, extendHotelStay } from '@/services/supabase/supabaseBookingApi';
 import { AlarmClock, AlertTriangle, Pin, CalendarDays, Plus, CalendarPlus, LogOut, BellRing, Search, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,17 +22,16 @@ export default function SitterPage() {
   const [activeTab, setActiveTab] = useState('PROCESSING'); // PROCESSING, CHECKOUT
   const [statsData, setStatsData] = useState({ active: 0, pending: 0, checkout: 0 });
 
-  const isTodayOrTomorrow = (dateString) => {
+  const isCheckoutSoonOrOverdue = (dateString) => {
     if (!dateString) return false;
     const date = new Date(dateString);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    date.setHours(0, 0, 0, 0);
 
-    return (
-      date.toDateString() === today.toDateString() ||
-      date.toDateString() === tomorrow.toDateString()
-    );
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(23, 59, 59, 999);
+
+    return date.getTime() <= tomorrow.getTime();
   };
 
   const loadData = async () => {
@@ -45,8 +44,8 @@ export default function SitterPage() {
       // Tính toán stats
       const active = allHotelData.filter(b => b.status === 'PROCESSING');
       const pending = allHotelData.filter(b => b.status === 'PENDING');
-      const checkout = active.filter(b => isTodayOrTomorrow(b.booking_room?.[0]?.check_out_date));
-      const activeOnly = active.filter(b => !isTodayOrTomorrow(b.booking_room?.[0]?.check_out_date));
+      const checkout = active.filter(b => isCheckoutSoonOrOverdue(b.booking_room?.[0]?.check_out_date));
+      const activeOnly = active.filter(b => !isCheckoutSoonOrOverdue(b.booking_room?.[0]?.check_out_date));
 
       setStatsData({
         active: activeOnly.length,
@@ -67,18 +66,31 @@ export default function SitterPage() {
   }, []);
 
   const handleSaveDiary = async (booking_id, diaryData) => {
-    await addDiaryEntry(booking_id, diaryData);
-    await loadData();
-    setModalType(null);
-    toast.success('Ghi nhận nhật ký thành công!');
+    try {
+      await addDiaryEntry(booking_id, diaryData);
+      await loadData();
+      setModalType(null);
+      toast.success('Ghi nhận nhật ký thành công!');
+    } catch (error) {
+      console.error('Error saving diary:', error);
+      toast.error('Lỗi khi lưu nhật ký: ' + (error.message || 'Xin vui lòng thử lại sau.'));
+    }
   };
 
   const handleExtendStay = async (data) => {
-    // Giả lập update
-
-    toast.success('Gia hạn lưu trú thành công!');
-    setModalType(null);
-    await loadData();
+    try {
+      await extendHotelStay(selectedBooking.booking_id, {
+        newCheckoutDate: data.new_checkout_date,
+        newRoomId: data.new_room,
+        extraFee: data.extra_fee
+      });
+      toast.success('Gia hạn lưu trú thành công!');
+      setModalType(null);
+      await loadData();
+    } catch (e) {
+      console.error(e);
+      toast.error('Gia hạn thất bại: ' + e.message);
+    }
   };
 
   const handleAddService = async (services) => {
@@ -123,8 +135,8 @@ export default function SitterPage() {
   const filteredBookings = hotelBookings.filter(b => {
     let matchTab = true;
     const checkoutDate = b.booking_room?.[0]?.check_out_date;
-    if (activeTab === 'PROCESSING') matchTab = b.status === 'PROCESSING' && !isTodayOrTomorrow(checkoutDate);
-    if (activeTab === 'CHECKOUT') matchTab = b.status === 'PROCESSING' && isTodayOrTomorrow(checkoutDate);
+    if (activeTab === 'PROCESSING') matchTab = b.status === 'PROCESSING' && !isCheckoutSoonOrOverdue(checkoutDate);
+    if (activeTab === 'CHECKOUT') matchTab = b.status === 'PROCESSING' && isCheckoutSoonOrOverdue(checkoutDate);
 
     if (!matchTab) return false;
 
@@ -364,7 +376,7 @@ export default function SitterPage() {
           booking={selectedBooking}
           initialMode="history"
           onClose={() => setModalType(null)}
-          onConfirm={handleSaveDiary}
+          onConfirm={(diaryData) => handleSaveDiary(selectedBooking.booking_id, diaryData)}
           onReportIncident={(booking) => {
             setSelectedBooking(booking);
             setModalType('EMERGENCY');
