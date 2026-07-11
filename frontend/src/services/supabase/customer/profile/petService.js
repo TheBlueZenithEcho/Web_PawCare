@@ -9,6 +9,11 @@ export async function getPetsByCustomer(customerId, { search, species } = {}) {
   return data;
 }
 
+/**
+ * Lịch chăm sóc sắp tới gần nhất của 1 pet — gộp cả booking Grooming (booking_service)
+ * và Pet Hotel (booking_room), chỉ tính booking đang ở trạng thái 'confirmed'.
+ * Dùng cho dòng "Upcoming: ..." trên card ở trang My Pets.
+ */
 export async function getUpcomingCareForPet(petId) {
   const nowIso = new Date().toISOString();
   const todayKey = nowIso.slice(0, 10);
@@ -21,7 +26,7 @@ export async function getUpcomingCareForPet(petId) {
   if (error) throw error;
 
   const groomingIds = bookings.filter((b) => b.booking_type === 'grooming').map((b) => b.booking_id);
-  const hotelIds = bookings.filter((b) => b.booking_type === 'hotel').map((b) => b.booking_id); // Đã sửa thành 'hotel'
+  const hotelIds = bookings.filter((b) => b.booking_type === 'hotel').map((b) => b.booking_id);
 
   let nextGrooming = null;
   let nextHotel = null;
@@ -72,6 +77,7 @@ export async function getPetById(petId) {
   return data;
 }
 
+// pet_health_record — dùng để vẽ Weight History (khớp đúng field weight có sẵn)
 export async function getPetHealthRecords(petId) {
   const { data, error } = await supabase
     .from('pet_health_record')
@@ -82,6 +88,7 @@ export async function getPetHealthRecords(petId) {
   return data;
 }
 
+// Lịch Grooming của pet (Scheduled Care / Appointments tab)
 export async function getPetGroomingBookings(petId) {
   const { data, error } = await supabase
     .from('booking')
@@ -96,6 +103,7 @@ export async function getPetGroomingBookings(petId) {
   return data;
 }
 
+// Lịch sử lưu trú Pet Hotel (Hotel Stays tab)
 export async function getPetHotelBookings(petId) {
   const { data, error } = await supabase
     .from('booking')
@@ -104,7 +112,7 @@ export async function getPetHotelBookings(petId) {
        booking_room(check_in_date, check_out_date, actual_check_out, price_per_night, room:room_id(room_id, price_per_night))`
     )
     .eq('pet_id', petId)
-    .eq('booking_type', 'hotel') // Đã sửa thành 'hotel'
+    .eq('booking_type', 'hotel')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
@@ -117,8 +125,31 @@ export async function updatePet(petId, patch) {
 }
 
 export async function createPet(payload) {
-  const newId = `PET-${Date.now().toString(36).toUpperCase()}`;
-  const { data, error } = await supabase.from('pet').insert({ pet_id: newId, ...payload }).select().single();
+  // 1. Lấy pet_id cuối cùng trong Database để tính mã tiếp theo
+  const { data: lastPet } = await supabase
+    .from('pet')
+    .select('pet_id')
+    .not('pet_id', 'like', '%-%') // Bỏ qua các ID lỗi cũ nếu có
+    .order('pet_id', { ascending: false })
+    .limit(1);
+
+  let nextId = 1;
+  if (lastPet && lastPet.length > 0 && lastPet[0].pet_id) {
+    // Tách chữ 'PET' ra, lấy phần số phía sau
+    const numPart = parseInt(lastPet[0].pet_id.replace('PET', ''), 10);
+    if (!isNaN(numPart)) nextId = numPart + 1;
+  }
+  
+  // 2. Tạo ID mới có ĐÚNG 8 KÝ TỰ (PET + 5 số)
+  const newId = `PET${nextId.toString().padStart(5, '0')}`; // VD: PET00001
+
+  // 3. Insert vào Database
+  const { data, error } = await supabase
+    .from('pet')
+    .insert({ pet_id: newId, ...payload })
+    .select()
+    .single();
+    
   if (error) throw error;
   return data;
 }
