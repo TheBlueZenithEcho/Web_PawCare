@@ -9,11 +9,6 @@ export async function getPetsByCustomer(customerId, { search, species } = {}) {
   return data;
 }
 
-/**
- * Lịch chăm sóc sắp tới gần nhất của 1 pet — gộp cả booking Grooming (booking_service)
- * và Pet Hotel (booking_room), chỉ tính booking đang ở trạng thái 'confirmed'.
- * Dùng cho dòng "Upcoming: ..." trên card ở trang My Pets.
- */
 export async function getUpcomingCareForPet(petId) {
   const nowIso = new Date().toISOString();
   const todayKey = nowIso.slice(0, 10);
@@ -26,7 +21,7 @@ export async function getUpcomingCareForPet(petId) {
   if (error) throw error;
 
   const groomingIds = bookings.filter((b) => b.booking_type === 'grooming').map((b) => b.booking_id);
-  const hotelIds = bookings.filter((b) => b.booking_type === 'pet_hotel').map((b) => b.booking_id);
+  const hotelIds = bookings.filter((b) => b.booking_type === 'hotel').map((b) => b.booking_id); // Đã sửa thành 'hotel'
 
   let nextGrooming = null;
   let nextHotel = null;
@@ -77,7 +72,6 @@ export async function getPetById(petId) {
   return data;
 }
 
-// pet_health_record — dùng để vẽ Weight History (khớp đúng field weight có sẵn)
 export async function getPetHealthRecords(petId) {
   const { data, error } = await supabase
     .from('pet_health_record')
@@ -88,7 +82,6 @@ export async function getPetHealthRecords(petId) {
   return data;
 }
 
-// Lịch Grooming của pet (Scheduled Care / Appointments tab)
 export async function getPetGroomingBookings(petId) {
   const { data, error } = await supabase
     .from('booking')
@@ -103,7 +96,6 @@ export async function getPetGroomingBookings(petId) {
   return data;
 }
 
-// Lịch sử lưu trú Pet Hotel (Hotel Stays tab)
 export async function getPetHotelBookings(petId) {
   const { data, error } = await supabase
     .from('booking')
@@ -112,8 +104,14 @@ export async function getPetHotelBookings(petId) {
        booking_room(check_in_date, check_out_date, actual_check_out, price_per_night, room:room_id(room_id, price_per_night))`
     )
     .eq('pet_id', petId)
-    .eq('booking_type', 'pet_hotel')
+    .eq('booking_type', 'hotel') // Đã sửa thành 'hotel'
     .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function updatePet(petId, patch) {
+  const { data, error } = await supabase.from('pet').update(patch).eq('pet_id', petId).select().single();
   if (error) throw error;
   return data;
 }
