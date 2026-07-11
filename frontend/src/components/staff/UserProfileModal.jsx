@@ -55,8 +55,9 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
           <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/30 bg-white/10 rounded-full transition-colors z-10 cursor-pointer">
             <X size={20} />
           </button>
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-center">
-            <div className="relative w-24 h-24 rounded-full bg-[#dcfce7] shadow-lg border-4 border-white/20 shrink-0 flex items-center justify-center text-4xl font-bold text-understory overflow-hidden group">
+          <div className="flex flex-col xl:flex-row gap-6 xl:items-center">
+            <div className="flex gap-4 sm:gap-6 items-center flex-1 min-w-0">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#dcfce7] shadow-lg border-4 border-white/20 shrink-0 flex items-center justify-center text-3xl sm:text-4xl font-bold text-understory overflow-hidden group">
               {(isEditingCustomer ? customerForm.cus_ava : localCustomer.cus_ava) ? (
                 <img src={isEditingCustomer ? customerForm.cus_ava : localCustomer.cus_ava} alt="Customer Avatar" className="w-full h-full object-cover" />
               ) : (
@@ -82,15 +83,15 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 </label>
               )}
             </div>
-            <div className="flex-1 min-w-0 w-full text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-1.5 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 {isEditingCustomer ? (
-                  <div className="flex gap-2 flex-1 min-w-0 justify-center md:justify-start">
+                  <div className="flex gap-2 flex-1 min-w-0">
                     <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold w-24 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.last_name} onChange={e => setCustomerForm({ ...customerForm, last_name: e.target.value })} placeholder="Họ" />
-                    <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold flex-1 min-w-0 max-w-[200px] focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.first_name} onChange={e => setCustomerForm({ ...customerForm, first_name: e.target.value })} placeholder="Tên" />
+                    <input className="px-3 py-1 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-xl font-bold flex-1 min-w-0 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.first_name} onChange={e => setCustomerForm({ ...customerForm, first_name: e.target.value })} placeholder="Tên" />
                   </div>
                 ) : (
-                  <h2 className="text-xl font-bold truncate max-w-full" title={`${localCustomer.last_name} ${localCustomer.first_name}`}>
+                  <h2 className="text-xl font-bold truncate" title={`${localCustomer.last_name} ${localCustomer.first_name}`}>
                     {localCustomer.last_name} {localCustomer.first_name}
                   </h2>
                 )}
@@ -107,17 +108,17 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 </div>
               </div>
               
-              <div className="text-white/80 text-sm mb-3 flex items-center justify-center md:justify-start gap-2 flex-wrap">
+              <div className="text-white/80 text-sm mb-3 flex items-center gap-2 flex-wrap">
                 <span>ID: {localCustomer.customer_id}</span>
                 <span className="text-white/40">•</span>
                 <span>Tham gia: {new Date(localCustomer.created_at).toLocaleDateString('vi-VN')}</span>
               </div>
 
-              <div className="flex gap-2 text-sm font-medium flex-wrap justify-center md:justify-start">
+              <div className="flex gap-4 text-sm font-medium flex-wrap">
                 {isEditingCustomer ? (
-                  <div className="flex gap-2 w-full justify-center md:justify-start">
+                  <div className="flex gap-3 w-full">
                     <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm w-32 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.phone} onChange={e => setCustomerForm({ ...customerForm, phone: e.target.value })} placeholder="SĐT" />
-                    <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm w-48 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.email} onChange={e => setCustomerForm({ ...customerForm, email: e.target.value })} placeholder="Email" />
+                    <input className="px-3 py-1.5 bg-white/10 text-white placeholder-white/50 rounded-lg border border-white/20 text-sm flex-1 min-w-0 focus:outline-none focus:bg-white/20 transition-colors" value={customerForm.email} onChange={e => setCustomerForm({ ...customerForm, email: e.target.value })} placeholder="Email" />
                   </div>
                 ) : (
                   <>
@@ -127,8 +128,9 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                 )}
               </div>
             </div>
-            <div className="flex flex-row md:flex-col gap-2 items-center justify-center w-full md:w-auto flex-wrap">
-              <div className="flex flex-row md:flex-col gap-2">
+            </div>
+            <div className="flex flex-row gap-4 items-center justify-between xl:justify-end shrink-0 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 hide-scrollbar">
+              <div className="flex flex-col gap-2 relative shrink-0">
                 {isEditingCustomer ? (
                   <div className="flex gap-2">
                     <button onClick={() => setIsEditingCustomer(false)} className="text-sm font-bold bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-xl transition-colors border border-white/20">Hủy</button>
@@ -170,7 +172,7 @@ export default function UserProfileModal({ customer, pets, bookings, onClose, on
                   </div>
                 )}
                 {!customer.user_id && (
-                  <div className="flex flex-row md:flex-col gap-2">
+                  <div className="flex flex-row sm:flex-col gap-2 shrink-0">
                     <button
                       onClick={() => onOpenCreateAccount(customer)}
                       className="text-xs font-semibold bg-white text-understory hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
