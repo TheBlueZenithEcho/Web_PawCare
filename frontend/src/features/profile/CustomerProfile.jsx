@@ -297,7 +297,7 @@ function RecentActivityCard({ customer }) {
           )}
         </div>
       </div>
-      <a href="/customer/profile/tai-khoan/lich-su-dat" className="rounded-full bg-understory text-white px-5 py-2.5 text-sm font-bold hover:bg-wood-bark transition-colors">
+      <a href="/customer/profile/lich_su_dat" className="rounded-full bg-understory text-white px-5 py-2.5 text-sm font-bold hover:bg-wood-bark transition-colors">
         Xem lịch sử đầy đủ
       </a>
     </div>

@@ -112,7 +112,7 @@ export default function StaffLayout({ children }) {
               <button 
                 onClick={() => {
                   localStorage.removeItem('staff_user');
-                  router.push('/login');
+                  router.push('/');
                 }}
                 title="Đăng xuất"
                 className="p-2 shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"

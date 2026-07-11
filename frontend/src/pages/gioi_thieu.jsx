@@ -39,7 +39,7 @@ export default function AboutPage() {
   };
 
   return (
-    <CusLayout activePath="/gioi-thieu">
+    <CusLayout activePath="/gioi_thieu">
       {/* SECTION 1: ABOUT / HERO */}
       <section 
         id="about"
@@ -134,49 +134,75 @@ export default function AboutPage() {
       </section>
 
       {/* TEAM EXPERTS SECTION */}
-      <section className="py-20 bg-white">
+      <section id="experts" className="py-20 bg-white scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-[#23361A] mb-16">
             Đội Ngũ Chuyên Gia Thân Thiện
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
             {/* Member 1 */}
             <div className="space-y-4">
-              <div className="w-40 h-40 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
                 <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop" 
-                  alt="Dr. Minh Thư"
+                  src="/images/dang_uyen.png" 
+                  alt="Đang Uyên"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h4 className="text-xl font-bold text-[#23361A]">Dr. Minh Thư</h4>
-              <p className="text-[#56992F] font-semibold text-sm">Chuyên Gia Cố Vấn Sức Khỏe</p>
+              <h4 className="text-lg font-bold text-[#23361A]">Đang Uyên</h4>
+              <p className="text-[#56992F] font-semibold text-xs">Bác sĩ Thú y</p>
             </div>
 
             {/* Member 2 */}
             <div className="space-y-4">
-              <div className="w-40 h-40 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
                 <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop" 
-                  alt="Hoàng Nam"
+                  src="/images/my_duyen.png" 
+                  alt="Mỹ Duyên"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h4 className="text-xl font-bold text-[#23361A]">Hoàng Nam</h4>
-              <p className="text-[#56992F] font-semibold text-sm">Stylist Grooming Trưởng</p>
+              <h4 className="text-lg font-bold text-[#23361A]">Mỹ Duyên</h4>
+              <p className="text-[#56992F] font-semibold text-xs">Chuyên viên Grooming</p>
             </div>
 
             {/* Member 3 */}
             <div className="space-y-4">
-              <div className="w-40 h-40 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
                 <img 
-                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400&auto=format&fit=crop" 
-                  alt="Khánh Linh"
+                  src="/images/yen_ngan.png" 
+                  alt="Yến Ngân"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h4 className="text-xl font-bold text-[#23361A]">Khánh Linh</h4>
-              <p className="text-[#56992F] font-semibold text-sm">Quản Lý Khách Sạn Thú Cưng</p>
+              <h4 className="text-lg font-bold text-[#23361A]">Yến Ngân</h4>
+              <p className="text-[#56992F] font-semibold text-xs">Quản lý Khách sạn</p>
+            </div>
+
+            {/* Member 4 */}
+            <div className="space-y-4">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
+                <img 
+                  src="/images/phuong_nghi.png" 
+                  alt="Phương Nghi"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h4 className="text-lg font-bold text-[#23361A]">Phương Nghi</h4>
+              <p className="text-[#56992F] font-semibold text-xs">Tư vấn Dinh dưỡng</p>
+            </div>
+
+            {/* Member 5 */}
+            <div className="space-y-4">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-[#EFF4BD] shadow-sm">
+                <img 
+                  src="/images/bao_quoc.png" 
+                  alt="Bảo Quốc"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h4 className="text-lg font-bold text-[#23361A]">Bảo Quốc</h4>
+              <p className="text-[#56992F] font-semibold text-xs">Huấn luyện viên</p>
             </div>
           </div>
         </div>

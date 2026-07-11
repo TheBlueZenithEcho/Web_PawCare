@@ -5,7 +5,7 @@ export default function ContactRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/gioi-thieu#contact');
+    router.replace('/gioi_thieu#contact');
   }, [router]);
 
   return (

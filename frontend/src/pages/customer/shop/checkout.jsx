@@ -78,7 +78,7 @@ export default function CheckoutPage() {
             setSelectedAddressId(defaultAddr.address_id);
             setAddress({
               recipient_name: defaultAddr.recipient_name || '',
-              recipient_phone: defaultAddr.recipient_phone || '',
+              recipient_phone: user.phone || defaultAddr.recipient_phone || '',
               street_address: defaultAddr.street_address || '',
               ward: defaultAddr.ward || '',
               district: defaultAddr.district || '',
@@ -175,8 +175,8 @@ export default function CheckoutPage() {
           province: address.province,
           deliveryNote: address.delivery_note,
         });
-        finalCustomerId = result?.customerId ?? result;
-        finalAddressId = result?.addressId ?? null;
+        finalCustomerId = result?.customer_id ?? result?.customerId ?? result;
+        finalAddressId = result?.address_id ?? result?.addressId ?? null;
       }
 
       if (finalCustomerId && !finalAddressId) {
@@ -249,7 +249,7 @@ export default function CheckoutPage() {
         <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-8 font-medium">
           <Link href="/" className="hover:text-[#1B693C] transition-colors">Trang chủ</Link>
           <ChevronRight size={13} />
-          <Link href="/san-pham" className="hover:text-[#1B693C] transition-colors">Cửa hàng</Link>
+          <Link href="/san_pham" className="hover:text-[#1B693C] transition-colors">Cửa hàng</Link>
           <ChevronRight size={13} />
           <Link href="/customer/shop/cart" className="hover:text-[#1B693C] transition-colors">Giỏ hàng</Link>
           <ChevronRight size={13} />
@@ -274,7 +274,7 @@ export default function CheckoutPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <button
-                onClick={() => router.push('/san-pham')}
+                onClick={() => router.push('/san_pham')}
                 className="px-6 py-2.5 bg-[#1B693C] hover:bg-[#155230] text-white font-bold text-sm rounded-full transition-all cursor-pointer"
               >
                 Tiếp tục mua sắm
@@ -326,7 +326,7 @@ export default function CheckoutPage() {
                                   setSelectedAddressId(addr.address_id);
                                   setAddress({
                                     recipient_name: addr.recipient_name || '',
-                                    recipient_phone: addr.recipient_phone || '',
+                                    recipient_phone: user?.phone || addr.recipient_phone || '',
                                     street_address: addr.street_address || '',
                                     ward: addr.ward || '',
                                     district: addr.district || '',
@@ -338,7 +338,7 @@ export default function CheckoutPage() {
                               />
                               <div className="text-xs">
                                 <p className="font-bold text-[#362F22]">
-                                  {addr.recipient_name} — {addr.recipient_phone}
+                                  {addr.recipient_name} — {user?.phone || addr.recipient_phone}
                                 </p>
                                 <p className="text-gray-500 mt-0.5 leading-relaxed">
                                   {addr.street_address}, {addr.ward}, {addr.district}, {addr.province}

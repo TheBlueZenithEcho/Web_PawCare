@@ -86,8 +86,8 @@ export const getVariantDetails = (product, selectedVariantLabel) => {
 };
 
 export const createOrder = async (orderData) => {
-  // Tạo ID ngẫu nhiên cho order (vd: ORD-123456)
-  const order_id = `ORD-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
+  // Tạo ID ngẫu nhiên cho order (vd: ORD12345) - tối đa 8 ký tự
+  const order_id = `ORD${Math.floor(10000 + Math.random() * 90000).toString()}`;
 
   // 1. Tạo bản ghi Order
   const { data: newOrder, error: orderError } = await supabase
@@ -95,12 +95,12 @@ export const createOrder = async (orderData) => {
     .insert([
       {
         order_id: order_id,
+        customer_id: orderData.customer_id,
         status: orderData.status || 'COMPLETED',
-        subtotal: orderData.total_amount, // Giả sử subtotal = total_amount
+        subtotal: orderData.subtotal || orderData.total_amount, 
         total_amount: orderData.total_amount,
-        shipping_fee: 0,
-        discount_amount: 0,
-        // Nếu có customer_id, có thể truyền vào đây
+        shipping_fee: orderData.shipping_fee || 0,
+        discount_amount: orderData.discount_amount || 0,
       }
     ])
     .select()
@@ -111,7 +111,7 @@ export const createOrder = async (orderData) => {
   // 2. Tạo Order Items
   if (orderData.items && orderData.items.length > 0) {
     const orderItems = orderData.items.map(item => ({
-      order_item_id: `OI-${Math.random().toString(36).substr(2, 9)}`,
+      order_item_id: `ORI${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
       order_id: order_id,
       variant_id: item.variant_id, // Cần variant_id thật
       quantity: item.quantity,
@@ -134,10 +134,10 @@ export const createOrder = async (orderData) => {
       .from('shipment')
       .insert([
         {
-          shipment_id: `SHP-${Math.random().toString(36).substr(2, 9)}`,
+          shipment_id: `SHP${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
           order_id: order_id,
+          address_id: orderData.address_id,
           shipment_status: 'PENDING',
-          // Lẽ ra phải link tới customer_address, nhưng đây là order nhanh tại quầy
         }
       ]);
 
@@ -206,32 +206,72 @@ export const updateOrderStatus = async (order_id, newStatus) => {
  * Lấy toàn bộ giỏ hàng của customer từ DB, kèm thông tin sản phẩm.
  */
 export async function fetchDbCart(customerId) {
-  // Thay đổi phần query để JOIN với bảng cart
   const { data, error } = await supabase
     .from('cart_item')
     .select(`
-      *,
-      cart!inner(customer_id) 
+      cart_item_id,
+      variant_id,
+      quantity,
+      product_variant (
+        capacity_label,
+        price,
+        stock_quantity,
+        product (name, brand, product_image (image_url))
+      ),
+      cart!inner(customer_id)
     `)
-    .eq('cart.customer_id', customerId); 
+    .eq('cart.customer_id', customerId);
 
   if (error) {
     console.error('fetchDbCart error:', error);
     return [];
   }
-  return data || [];
-};
+
+  return (data || []).map((item) => {
+    const variant = item.product_variant || {};
+    const product = variant.product || {};
+    const images = product.product_image || [];
+    return {
+      cart_item_id: item.cart_item_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      name: product.name || 'Sản phẩm',
+      brand: product.brand || 'Khác',
+      price: Number(variant.price) || 0,
+      image: images[0]?.image_url || 'https://placehold.co/400?text=No+Image',
+      capacity_label: variant.capacity_label || '',
+      stock_quantity: Number(variant.stock_quantity) || 0,
+    };
+  });
+}
 
 /**
  * Thêm sản phẩm vào giỏ hàng DB.
  * Nếu variant đã có trong giỏ → tăng số lượng.
  */
 export const addDbCartItem = async (customer_id, variant_id, quantity = 1) => {
-  // Kiểm tra đã có item chưa
+  // 1. Lấy hoặc tạo cart cho customer
+  let { data: cart } = await supabase
+    .from('cart')
+    .select('cart_id')
+    .eq('customer_id', customer_id)
+    .maybeSingle();
+
+  if (!cart) {
+    const cart_id = `CRT${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    const { error: cartError } = await supabase
+      .from('cart')
+      .insert([{ cart_id, customer_id }]);
+    if (cartError) throw cartError;
+    cart = { cart_id };
+  }
+  const cart_id = cart.cart_id;
+
+  // 2. Kiểm tra xem variant đã tồn tại trong cart_item chưa
   const { data: existing } = await supabase
     .from('cart_item')
     .select('cart_item_id, quantity')
-    .eq('customer_id', customer_id)
+    .eq('cart_id', cart_id)
     .eq('variant_id', variant_id)
     .maybeSingle();
 
@@ -242,10 +282,10 @@ export const addDbCartItem = async (customer_id, variant_id, quantity = 1) => {
       .eq('cart_item_id', existing.cart_item_id);
     if (error) throw error;
   } else {
-    const cart_item_id = `CI-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const cart_item_id = `CIT${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     const { error } = await supabase
       .from('cart_item')
-      .insert([{ cart_item_id, customer_id, variant_id, quantity }]);
+      .insert([{ cart_item_id, cart_id, variant_id, quantity }]);
     if (error) throw error;
   }
 };
@@ -276,10 +316,17 @@ export const removeDbCartItem = async (cart_item_id) => {
  * Xóa toàn bộ giỏ hàng DB của customer.
  */
 export const clearDbCartItems = async (customer_id) => {
+  const { data: cart } = await supabase
+    .from('cart')
+    .select('cart_id')
+    .eq('customer_id', customer_id)
+    .maybeSingle();
+  if (!cart) return;
+
   const { error } = await supabase
     .from('cart_item')
     .delete()
-    .eq('customer_id', customer_id);
+    .eq('cart_id', cart.cart_id);
   if (error) throw error;
 };
 
@@ -288,14 +335,22 @@ export const clearDbCartItems = async (customer_id) => {
  */
 export const removeSelectedDbCartItems = async (customer_id, variantIds) => {
   if (!variantIds || variantIds.length === 0) return;
+  
+  const { data: cart } = await supabase
+    .from('cart')
+    .select('cart_id')
+    .eq('customer_id', customer_id)
+    .maybeSingle();
+  if (!cart) return;
+
   const { error } = await supabase
     .from('cart_item')
     .delete()
-    .eq('customer_id', customer_id)
+    .eq('cart_id', cart.cart_id)
     .in('variant_id', variantIds);
   if (error) throw error;
 };
 
-export const getOrCreateGuestCustomer = async (data) => { return { customer_id: 'GUEST-123' }; };
-export const createCustomerAddress = async (data) => { return { address_id: 'ADDR-123' }; };
+export const getOrCreateGuestCustomer = async (data) => { return { customer_id: 'GST00001' }; };
+export const createCustomerAddress = async (data) => { return { address_id: 'ADR00001' }; };
 export const fetchCustomerAddresses = async (id) => { return []; };

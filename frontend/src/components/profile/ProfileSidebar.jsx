@@ -5,9 +5,9 @@ import { supabase } from '../../services/supabase/client';
 import Header from '../layout/Header'
 
 const NAV_ITEMS = [
-  { label: 'My Profile', href: '/customer/profile/tai-khoan', icon: User },
-  { label: 'My Pets', href: '/customer/profile/thu-cung', icon: PawPrint },
-  { label: 'Booking History', href: '/customer/profile/lich-su-dat', icon: CalendarClock },
+  { label: 'My Profile', href: '/customer/profile/tai_khoan', icon: User },
+  { label: 'My Pets', href: '/customer/profile/thu_cung', icon: PawPrint },
+  { label: 'Booking History', href: '/customer/profile/lich_su_dat', icon: CalendarClock },
 ];
 
 export default function ProfileSidebar({ customer, loading, notLoggedIn, children }) {
@@ -15,7 +15,8 @@ export default function ProfileSidebar({ customer, loading, notLoggedIn, childre
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/dang-nhap'); // Sửa lại route trang đăng nhập nếu cần
+    localStorage.removeItem('customer_user');
+    router.push('/');
   };
 
   // 1. Xử lý trạng thái đang tải

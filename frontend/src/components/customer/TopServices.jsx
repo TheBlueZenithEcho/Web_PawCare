@@ -18,7 +18,7 @@ export default function TopServices() {
             description: 'Spa & Grooming toàn diện cho bé cưng luôn thơm tho và lộng lẫy.',
             image: '/images/grooming.png',
             icon: Sparkles,
-            path: '/dich-vu-cham-soc',
+            path: '/customer/booking/dich_vu_cham_soc',
             buttonText: 'ĐẶT LỊCH TRẢI NGHIỆM NGAY',
             priceDetails: [
                 { name: 'Tắm vệ sinh chuyên sâu', price: 'từ 200.000đ' },
@@ -31,7 +31,7 @@ export default function TopServices() {
             description: 'Khách sạn chuẩn 5 sao, không gian riêng tư, camera 24/7 theo dõi.',
             image: '/images/hotel.png',
             icon: Home,
-            path: '/dich-vu-luu-tru',
+            path: '/customer/booking/dich_vu_luu_tru',
             buttonText: 'ĐẶT LỊCH TRẢI NGHIỆM NGAY',
             priceDetails: [
                 { name: 'Phòng Tiêu chuẩn (Standard)', price: 'từ 150.000đ/đêm' },
@@ -44,7 +44,7 @@ export default function TopServices() {
             description: 'Cung cấp hạt dinh dưỡng, pate cao cấp và phụ kiện sành điệu cho Pet.',
             image: '/images/shop.png',
             icon: ShoppingBag,
-            path: '/san-pham',
+            path: '/san_pham',
             buttonText: 'KHÁM PHÁ SẢN PHẨM NGAY',
             priceDetails: [
                 { name: 'Hạt dinh dưỡng nhập khẩu', price: 'Giá cạnh tranh' },

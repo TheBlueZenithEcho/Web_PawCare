@@ -7,25 +7,33 @@ import CustomerIdentityCard from '../../components/booking/CustomerIdentityCard'
 
 export default function Step2_CustomerDetails({ booking, setBooking, onNext, onBack, lock }) {
   const [errors, setErrors] = useState({});
-  const [service, setService] = useState(null);
-  const [rule, setRule] = useState(null);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedRules, setSelectedRules] = useState([]);
   const [loadingPrice, setLoadingPrice] = useState(true);
 
   // Chốt lại giá/thời gian ngay khi vào Bước 2 (revalidate, tránh giá lệch nếu DB đổi giữa chừng)
   useEffect(() => {
+    const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
+    if (ids.length === 0) {
+      setLoadingPrice(false);
+      return;
+    }
+
     Promise.all([
-      getGroomingServices().then((list) => list.find((s) => s.service_id === booking.serviceId)),
-      getDurationRule(booking.serviceId, booking.species, booking.sizeId),
+      getGroomingServices(),
+      Promise.all(ids.map(id => getDurationRule(id, booking.species, booking.sizeId)))
     ])
-      .then(([svc, r]) => {
-        setService(svc || null);
-        setRule(r || null);
+      .then(([allSvcs, fetchedRules]) => {
+        const svcs = allSvcs.filter(s => ids.includes(s.service_id));
+        setSelectedServices(svcs);
+        setSelectedRules(fetchedRules.filter(Boolean));
       })
       .catch((e) => console.error(e))
       .finally(() => setLoadingPrice(false));
-  }, [booking.serviceId, booking.species, booking.sizeId]);
+  }, [booking.serviceId, booking.serviceIds, booking.species, booking.sizeId]);
 
-  const total = rule ? rule.base_price : 0;
+  const total = selectedRules.reduce((sum, r) => sum + (r.base_price || 0), 0);
+  const totalDurationMinutes = selectedRules.reduce((sum, r) => sum + (r.estimated_minutes || 60), 0);
   const deposit = calculateDeposit(total);
 
   const updatePet = (patch) => setBooking((prev) => ({ ...prev, pet: { ...prev.pet, ...patch } }));
@@ -48,7 +56,7 @@ export default function Step2_CustomerDetails({ booking, setBooking, onNext, onB
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 flex flex-col gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-wood-bark mb-2">Booking Information</h2>
+          <h2 className="text-3xl font-bold text-wood-bark mb-2">Thông tin đặt lịch</h2>
           <p className="text-wood-bark/60 max-w-xl">
             Vui lòng cung cấp thông tin để chúng tôi chuẩn bị dịch vụ chăm sóc tốt nhất cho thú cưng của bạn.
           </p>
@@ -59,15 +67,15 @@ export default function Step2_CustomerDetails({ booking, setBooking, onNext, onB
 
         <div className="bg-white rounded-3xl shadow-sm p-6 flex flex-col gap-4">
           <h3 className="font-bold text-wood-bark flex items-center gap-2">
-            🐾 Pet Profile {booking.pet.petId ? '(cập nhật thông tin mới nếu có)' : '(thú cưng mới)'}
+            🐾 Hồ sơ thú cưng {booking.pet.petId ? '(cập nhật thông tin mới nếu có)' : '(thú cưng mới)'}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
-            <Field label="Pet Name" value={booking.pet.name} onChange={(v) => updatePet({ name: v })} error={errors.petName} />
-            <Field label="Breed" value={booking.pet.breed} onChange={(v) => updatePet({ breed: v })} />
-            <Field label="Weight (kg)" type="number" value={booking.pet.weight} onChange={(v) => updatePet({ weight: v })} />
+            <Field label="Tên thú cưng" value={booking.pet.name} onChange={(v) => updatePet({ name: v })} error={errors.petName} />
+            <Field label="Giống loài" value={booking.pet.breed} onChange={(v) => updatePet({ breed: v })} />
+            <Field label="Cân nặng (kg)" type="number" value={booking.pet.weight} onChange={(v) => updatePet({ weight: v })} />
           </div>
           <div>
-            <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Special Instructions or Allergies</label>
+            <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Lưu ý đặc biệt hoặc Dị ứng</label>
             <textarea
               rows={3}
               value={booking.pet.allergyNotes}
@@ -79,7 +87,7 @@ export default function Step2_CustomerDetails({ booking, setBooking, onNext, onB
         </div>
 
         <button onClick={onBack} className="self-start text-sm font-semibold text-wood-bark/70 hover:text-understory">
-          ← Back to Selection
+          ← Quay lại bước chọn
         </button>
       </div>
 
@@ -90,15 +98,21 @@ export default function Step2_CustomerDetails({ booking, setBooking, onNext, onB
           </div>
         ) : (
           <BookingSummaryCard
-            packageInfo={service ? { name: service.service_name, description: service.description } : null}
+            packageInfo={selectedServices.length > 0 ? {
+              name: selectedServices.map(s => s.service_name).join(' + '),
+              description: selectedServices.map(s => s.description).join('; ')
+            } : null}
             petLabel={booking.pet.name ? `${booking.pet.name} (${booking.sizeId})` : ''}
             timeLabel={booking.time}
-            durationLabel={rule ? formatDuration(rule.estimated_minutes) : undefined}
-            breakdown={[{ label: service?.service_name || 'Dịch vụ', amount: total }]}
+            durationLabel={totalDurationMinutes ? formatDuration(totalDurationMinutes) : undefined}
+            breakdown={selectedServices.map(s => {
+              const r = selectedRules.find(rule => rule.service_id === s.service_id);
+              return { label: s.service_name, amount: r ? r.base_price : 0 };
+            })}
             total={total}
             deposit={deposit}
             note={requiresDeposit(total) ? 'Đơn có giá trị ≥ 1.000.000đ nên cần đặt cọc 30% để giữ lịch.' : 'Đơn dưới 1.000.000đ nên không cần đặt cọc.'}
-            ctaLabel="Continue to Payment →"
+            ctaLabel="Tiếp tục thanh toán →"
             onCtaClick={handleContinue}
             lock={lock}
           />

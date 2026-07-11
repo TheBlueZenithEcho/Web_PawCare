@@ -45,7 +45,7 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
     <div className="flex flex-col gap-8">
       <section className="text-center max-w-2xl mx-auto pt-4">
         <h1 className="text-4xl font-bold text-wood-bark leading-tight">
-          A Sanctuary for Your <span className="text-understory">Cherished</span> Companions
+          Nơi cư trú lý tưởng cho <span className="text-understory">thú cưng</span> của bạn
         </h1>
         <p className="text-wood-bark/60 mt-3">
           Trải nghiệm dịch vụ lưu trú cao cấp. Chăm sóc riêng biệt, phòng rộng rãi, an tâm tuyệt đối.
@@ -60,7 +60,7 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
 
       <div className="bg-white rounded-3xl shadow-sm p-5 max-w-4xl mx-auto w-full grid sm:grid-cols-4 gap-4 items-end">
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Species</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Loài</label>
           <select value={species} onChange={(e) => setSpecies(e.target.value)} className="w-full bg-fresh-grown/20 rounded-xl px-3 py-2.5 text-sm font-medium outline-none">
             {SPECIES_FILTER.map((s) => (
               <option key={s.id} value={s.id}>{s.label}</option>
@@ -68,7 +68,7 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Pet Weight</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Cân nặng thú cưng</label>
           <select value={weightBracket} onChange={(e) => setWeightBracket(e.target.value)} className="w-full bg-fresh-grown/20 rounded-xl px-3 py-2.5 text-sm font-medium outline-none">
             {WEIGHT_BRACKETS.map((w) => (
               <option key={w.id} value={w.id}>{w.label}</option>
@@ -76,30 +76,30 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Check-in</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Nhận phòng</label>
           <input type="date" value={booking.checkIn} onChange={(e) => update({ checkIn: e.target.value })} className="w-full bg-fresh-grown/20 rounded-xl px-3 py-2.5 text-sm font-medium outline-none" />
         </div>
         <div>
-          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Check-out</label>
+          <label className="text-xs font-semibold text-wood-bark/60 block mb-1">Trả phòng</label>
           <input type="date" value={booking.checkOut} min={booking.checkIn || undefined} onChange={(e) => update({ checkOut: e.target.value })} className="w-full bg-fresh-grown/20 rounded-xl px-3 py-2.5 text-sm font-medium outline-none" />
         </div>
       </div>
 
       {!nightsSelected && (
         <p className="text-center text-xs text-wood-bark/50 -mt-4">
-          Vui lòng chọn ngày check-in / check-out để kiểm tra phòng còn trống.
+          Vui lòng chọn ngày nhận phòng / trả phòng để kiểm tra phòng còn trống.
         </p>
       )}
 
       <div className="max-w-md mx-auto w-full flex items-center gap-3 bg-fresh-grown/30 rounded-2xl px-4 py-3">
         <Calendar size={18} className="text-understory shrink-0" />
         <p className="text-xs text-wood-bark/70">
-          <strong>Auto-Weight Filter Active</strong> — Đang hiển thị phòng phù hợp {bracket.label.toLowerCase()}.
+          <strong>Bộ lọc cân nặng tự động</strong> — Đang hiển thị phòng phù hợp {bracket.label.toLowerCase()}.
         </p>
       </div>
 
       <section>
-        <h2 className="text-2xl font-bold text-wood-bark mb-1">Exclusive Suites</h2>
+        <h2 className="text-2xl font-bold text-wood-bark mb-1">Hệ thống phòng đặc biệt</h2>
         <p className="text-sm text-wood-bark/60 mb-5">Mỗi phòng đều có giám sát 24/7, kiểm soát nhiệt độ và đệm chỉnh hình.</p>
 
         {loading ? (
@@ -114,19 +114,19 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
               return (
                 <div key={room.room_id} className={`bg-white rounded-3xl overflow-hidden shadow-sm flex flex-col ${isSelected ? 'ring-2 ring-fresh-grown shadow-lg' : ''}`}>
                   <div className="h-40 bg-fresh-grown/30 relative flex items-center justify-center">
-                    <span className="text-understory/50 text-sm">Room image</span>
+                    <span className="text-understory/50 text-sm">Hình ảnh phòng</span>
                     {nightsSelected && (
                       <span className={`absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full ${isAvailable ? 'bg-understory text-white' : 'bg-orange-500 text-white'}`}>
-                        {isAvailable ? 'Available' : 'Đã kín lịch'}
+                        {isAvailable ? 'Còn trống' : 'Đã kín lịch'}
                       </span>
                     )}
                   </div>
                   <div className="p-5 flex flex-col gap-3 flex-1">
                     <div className="flex items-start justify-between">
-                      <h3 className="font-bold text-wood-bark text-lg">Room {room.room_id}</h3>
+                      <h3 className="font-bold text-wood-bark text-lg">Phòng {room.room_id}</h3>
                       <div className="text-right shrink-0">
                         <p className="font-bold text-understory">{formatVND(room.price_per_night)}</p>
-                        <p className="text-[10px] text-wood-bark/50 uppercase">per night</p>
+                        <p className="text-[10px] text-wood-bark/50 uppercase">mỗi đêm</p>
                       </div>
                     </div>
                     <p className="text-sm text-wood-bark/60 flex-1">
@@ -137,7 +137,7 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
                       disabled={!nightsSelected || !isAvailable}
                       className={`mt-2 w-full rounded-full py-3 text-sm font-bold transition-colors ${isSelected ? 'bg-wood-bark text-white' : 'bg-understory text-white hover:bg-wood-bark disabled:opacity-40'}`}
                     >
-                      {isSelected ? 'Đã chọn ✓' : 'Book Now'}
+                      {isSelected ? 'Đã chọn ✓' : 'Đặt phòng ngay'}
                     </button>
                   </div>
                 </div>
@@ -150,7 +150,7 @@ export default function Step1_RoomSelection({ booking, setBooking, onNext, lock 
       {booking.roomId && (
         <div className="flex justify-center">
           <button onClick={onNext} className="rounded-full bg-understory px-10 py-3.5 text-sm font-bold text-white hover:bg-wood-bark transition-colors">
-            Continue to Guest Details →
+            Tiếp tục điền thông tin →
           </button>
         </div>
       )}

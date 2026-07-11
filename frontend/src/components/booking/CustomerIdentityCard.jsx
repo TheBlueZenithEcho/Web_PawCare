@@ -216,14 +216,14 @@ export default function CustomerIdentityCard({ booking, setBooking, errors = {} 
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           {(!booking.customer.lastName || !booking.customer.firstName || errors.firstName || errors.lastName) ? (
             <>
-              <Field label="First Name" value={booking.customer.firstName} onChange={(v) => updateCustomer({ firstName: v })} error={errors.firstName} />
-              <Field label="Last Name" value={booking.customer.lastName} onChange={(v) => updateCustomer({ lastName: v })} error={errors.lastName} />
+              <Field label="Tên" value={booking.customer.firstName} onChange={(v) => updateCustomer({ firstName: v })} error={errors.firstName} />
+              <Field label="Họ" value={booking.customer.lastName} onChange={(v) => updateCustomer({ lastName: v })} error={errors.lastName} />
             </>
           ) : (
             <InfoRow label="Họ tên" value={`${booking.customer.lastName} ${booking.customer.firstName}`.trim()} />
           )}
           {(!booking.customer.phone || errors.phone) ? (
-            <Field label="Phone Number" value={booking.customer.phone} onChange={(v) => updateCustomer({ phone: v })} error={errors.phone} />
+            <Field label="Số điện thoại" value={booking.customer.phone} onChange={(v) => updateCustomer({ phone: v })} error={errors.phone} />
           ) : (
             <InfoRow label="Số điện thoại" value={booking.customer.phone} />
           )}
@@ -252,12 +252,12 @@ export default function CustomerIdentityCard({ booking, setBooking, errors = {} 
     <div className="bg-white rounded-3xl shadow-sm p-6 flex flex-col gap-4">
       <h3 className="font-bold text-wood-bark flex items-center gap-2">👤 Thông tin khách hàng mới</h3>
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="First Name" value={booking.customer.firstName} onChange={(v) => updateCustomer({ firstName: v })} error={errors.firstName} />
-        <Field label="Last Name" value={booking.customer.lastName} onChange={(v) => updateCustomer({ lastName: v })} error={errors.lastName} />
+        <Field label="Tên" value={booking.customer.firstName} onChange={(v) => updateCustomer({ firstName: v })} error={errors.firstName} />
+        <Field label="Họ" value={booking.customer.lastName} onChange={(v) => updateCustomer({ lastName: v })} error={errors.lastName} />
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Phone Number" value={booking.customer.phone} onChange={(v) => updateCustomer({ phone: v })} error={errors.phone} />
-        <Field label="Email Address" value={booking.customer.email} onChange={(v) => updateCustomer({ email: v })} />
+        <Field label="Số điện thoại" value={booking.customer.phone} onChange={(v) => updateCustomer({ phone: v })} error={errors.phone} />
+        <Field label="Địa chỉ Email" value={booking.customer.email} onChange={(v) => updateCustomer({ email: v })} />
       </div>
       <button onClick={() => setPhase('guest-entry')} className="self-start text-sm font-semibold text-wood-bark/60 hover:text-understory">
         ← Tôi thật ra đã từng đến, để mình tra lại SĐT

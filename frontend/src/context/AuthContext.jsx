@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
 
     window.dispatchEvent(new CustomEvent('auth-change', { detail: { user: null } }));
 
-    router.push('/login');
+    router.push('/');
   }, [router]);
 
   const isAuthenticated = !!user;

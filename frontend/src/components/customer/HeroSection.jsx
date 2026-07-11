@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useId, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { toast } from 'sonner';
 
 const stats = [
     {
@@ -28,12 +29,23 @@ const galleryItems = [
 
 const avatarItems = [
     { src: "/images/dog.png", alt: "Chó cưng vui vẻ" },
-    { src: "/images/cat-hero.png", alt: "Mèo vui vẻ" },
+    { src: "/images/cat_hero.png", alt: "Mèo vui vẻ" },
 ];
 
 export default function HeroSection() {
     const [phone, setPhone] = useState("");
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const phoneInputId = useId();
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (!phone.trim()) {
+            toast.error("Vui lòng nhập số điện thoại!");
+            return;
+        }
+        setShowSuccessModal(true);
+        setPhone("");
+    };
 
     return (
         <main className="w-full bg-[#f7f7f7]">
@@ -137,7 +149,7 @@ export default function HeroSection() {
 
                             <form
                                 className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-0"
-                                onSubmit={(event) => event.preventDefault()}
+                                onSubmit={handleSubmit}
                             >
                                 <label htmlFor={phoneInputId} className="sr-only">
                                     Nhập số điện thoại của bạn
@@ -167,6 +179,27 @@ export default function HeroSection() {
                     </div>
                 </div>
             </section>
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl border border-gray-100 transform scale-100 transition-all duration-300">
+                        <div className="w-16 h-16 bg-[#EFF4BD] text-[#1c693d] rounded-full flex items-center justify-center mx-auto text-3xl">
+                            🐾
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-bold text-[#23361A]">Đăng ký nhận ưu đãi</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                                Cảm ơn bạn đã liên hệ, chúng tôi sẽ liên hệ với bạn sớm!
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-full bg-[#1c693d] hover:bg-[#154f2e] text-white font-semibold py-3.5 rounded-full transition-colors cursor-pointer"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

@@ -62,6 +62,21 @@ export async function upsertCustomer({ customerId, firstName, lastName, phone, e
     return data;
   }
 
+  // Check if a customer with the same phone already exists
+  if (phone) {
+    const { data: existing, error: checkError } = await supabase
+      .from('customer')
+      .select('customer_id')
+      .eq('phone', phone)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existing) {
+      throw new Error("Số điện thoại này đã được đăng ký trước đó, vui lòng kiểm tra lại");
+    }
+  }
+
   const newId = await generateIdAsync('CUS', 'customer', 'customer_id');
   const { data, error } = await supabase
     .from('customer')

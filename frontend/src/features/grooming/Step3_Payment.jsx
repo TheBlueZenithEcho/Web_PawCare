@@ -13,22 +13,27 @@ const PAYMENT_METHODS = [
 
 export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed, lock }) {
   const [phase, setPhase] = useState('review'); // review | processing | done | error
-  const [service, setService] = useState(null);
-  const [rule, setRule] = useState(null);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedRules, setSelectedRules] = useState([]);
   const [submitError, setSubmitError] = useState('');
   const [orderId, setOrderId] = useState(() => `PC-${Math.floor(10000 + Math.random() * 89999)}`);
 
   useEffect(() => {
-    Promise.all([
-      getGroomingServices().then((list) => list.find((s) => s.service_id === booking.serviceId)),
-      getDurationRule(booking.serviceId, booking.species, booking.sizeId),
-    ]).then(([svc, r]) => {
-      setService(svc || null);
-      setRule(r || null);
-    });
-  }, [booking.serviceId, booking.species, booking.sizeId]);
+    const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
+    if (ids.length === 0) return;
 
-  const total = rule ? rule.base_price : 0;
+    Promise.all([
+      getGroomingServices(),
+      Promise.all(ids.map(id => getDurationRule(id, booking.species, booking.sizeId)))
+    ]).then(([allSvcs, fetchedRules]) => {
+      const svcs = allSvcs.filter(s => ids.includes(s.service_id));
+      setSelectedServices(svcs);
+      setSelectedRules(fetchedRules.filter(Boolean));
+    });
+  }, [booking.serviceId, booking.serviceIds, booking.species, booking.sizeId]);
+
+  const total = selectedRules.reduce((sum, r) => sum + (r.base_price || 0), 0);
+  const totalDurationMinutes = selectedRules.reduce((sum, r) => sum + (r.estimated_minutes || 60), 0);
   const needsDeposit = requiresDeposit(total);
   const depositAmount = calculateDeposit(total);
   const amountDue = needsDeposit ? depositAmount : total;
@@ -37,7 +42,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
     setSubmitError('');
     try {
       await createGroomingBooking({
-        booking: { ...booking, durationMinutes: rule?.estimated_minutes },
+        booking: { ...booking, durationMinutes: totalDurationMinutes },
         totalBill: total,
         orderId,
       });
@@ -71,7 +76,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
         needsDeposit={needsDeposit}
         method={booking.paymentMethod}
         petName={booking.pet.name}
-        serviceName={service?.service_name}
+        serviceName={selectedServices.map(s => s.service_name).join(' + ')}
         groomer={booking.groomer}
       />
     );
@@ -80,7 +85,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 flex flex-col gap-6">
-        <h2 className="text-3xl font-bold text-wood-bark">Payment</h2>
+        <h2 className="text-3xl font-bold text-wood-bark">Thanh toán</h2>
 
         {submitError && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-2xl px-4 py-3 flex items-center gap-2">
@@ -137,17 +142,23 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
         )}
 
         <button onClick={onBack} className="self-start text-sm font-semibold text-wood-bark/70 hover:text-understory">
-          ← Back to Info
+          ← Quay lại điền thông tin
         </button>
       </div>
 
       <div className="w-full lg:w-[360px]">
         <BookingSummaryCard
-          packageInfo={service ? { name: service.service_name, description: service.description } : null}
+          packageInfo={selectedServices.length > 0 ? {
+            name: selectedServices.map(s => s.service_name).join(' + '),
+            description: selectedServices.map(s => s.description).join('; ')
+          } : null}
           petLabel={booking.pet.name}
           timeLabel={booking.time}
-          durationLabel={rule ? formatDuration(rule.estimated_minutes) : undefined}
-          breakdown={[{ label: service?.service_name || 'Dịch vụ', amount: total }]}
+          durationLabel={totalDurationMinutes ? formatDuration(totalDurationMinutes) : undefined}
+          breakdown={selectedServices.map(s => {
+            const r = selectedRules.find(rule => rule.service_id === s.service_id);
+            return { label: s.service_name, amount: r ? r.base_price : 0 };
+          })}
           total={total}
           deposit={needsDeposit ? depositAmount : 0}
           ctaLabel="Xem chi tiết đơn"
@@ -179,7 +190,7 @@ function SuccessScreen({ orderId, total, amountDue, needsDeposit, method, petNam
           <Row label="Phương thức" value={method === 'bank_transfer' ? 'Chuyển khoản' : method === 'momo' ? 'MoMo' : 'VNPay'} />
         )}
       </div>
-      <a href="/dich-vu-cham-soc" className="mt-4 rounded-full bg-understory px-8 py-3 text-sm font-bold text-white hover:bg-wood-bark transition-colors">
+      <a href="/customer/booking/dich_vu_cham_soc" className="mt-4 rounded-full bg-understory px-8 py-3 text-sm font-bold text-white hover:bg-wood-bark transition-colors">
         Về trang Dịch vụ
       </a>
     </div>

@@ -53,7 +53,7 @@ export default function Step2_GuestDetails({ booking, setBooking, onNext, onBack
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 flex flex-col gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-wood-bark mb-2">Guest & Booking Details</h2>
+          <h2 className="text-3xl font-bold text-wood-bark mb-2">Chi tiết Đặt phòng & Thông tin khách hàng</h2>
           <p className="text-wood-bark/60 max-w-xl">
             Cho chúng tôi biết thêm về người bạn nhỏ để chuyến lưu trú được chăm sóc chu đáo nhất.
           </p>
@@ -64,7 +64,7 @@ export default function Step2_GuestDetails({ booking, setBooking, onNext, onBack
 
         <Card title="🏠 Địa chỉ">
           <Field
-            label="Home Address"
+            label="Địa chỉ nhà"
             value={booking.extra.homeAddress}
             onChange={(v) => updateExtra({ homeAddress: v })}
             placeholder="123 Serenity Way, Green Valley"
@@ -72,72 +72,72 @@ export default function Step2_GuestDetails({ booking, setBooking, onNext, onBack
           />
         </Card>
 
-        <Card title={`🐾 Pet Profile ${booking.pet.petId ? '(cập nhật thông tin mới nếu có)' : '(thú cưng mới)'}`}>
+        <Card title={`🐾 Hồ sơ thú cưng ${booking.pet.petId ? '(cập nhật thông tin mới nếu có)' : '(thú cưng mới)'}`}>
           <div className="grid sm:grid-cols-3 gap-4">
-            <Field label="Pet's Name" value={booking.pet.name} onChange={(v) => updatePet({ name: v })} error={errors.petName} />
+            <Field label="Tên thú cưng" value={booking.pet.name} onChange={(v) => updatePet({ name: v })} error={errors.petName} />
             <div>
-              <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Species</label>
+              <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Loài</label>
               <select value={booking.pet.species} onChange={(e) => updatePet({ species: e.target.value })} className="w-full rounded-2xl bg-fresh-grown/20 px-4 py-3 text-sm outline-none">
-                {SPECIES_OPTIONS.map((s) => <option key={s} value={s}>{s === 'dog' ? 'Dog' : 'Cat'}</option>)}
+                {SPECIES_OPTIONS.map((s) => <option key={s} value={s}>{s === 'dog' ? 'Chó' : 'Mèo'}</option>)}
               </select>
             </div>
-            <Field label="Breed" value={booking.pet.breed} onChange={(v) => updatePet({ breed: v })} />
+            <Field label="Giống loài" value={booking.pet.breed} onChange={(v) => updatePet({ breed: v })} />
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
-            <Field label="Age (Years)" type="number" value={booking.pet.ageYears} onChange={(v) => updatePet({ ageYears: v })} hint="Sẽ quy đổi sang pet.dob khi lưu." />
-            <Field label="Weight (kg)" type="number" value={booking.pet.weight} onChange={(v) => updatePet({ weight: v })} />
+            <Field label="Tuổi (năm)" type="number" value={booking.pet.ageYears} onChange={(v) => updatePet({ ageYears: v })} hint="Sẽ quy đổi sang pet.dob khi lưu." />
+            <Field label="Cân nặng (kg)" type="number" value={booking.pet.weight} onChange={(v) => updatePet({ weight: v })} />
             <div>
-              <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Gender</label>
+              <label className="text-sm font-semibold text-wood-bark/80 mb-1.5 block">Giới tính</label>
               <select value={booking.pet.gender} onChange={(e) => updatePet({ gender: e.target.value })} className="w-full rounded-2xl bg-fresh-grown/20 px-4 py-3 text-sm outline-none">
-                {GENDER_OPTIONS.map((g) => <option key={g} value={g}>{g === 'male' ? 'Male' : 'Female'}</option>)}
+                {GENDER_OPTIONS.map((g) => <option key={g} value={g}>{g === 'male' ? 'Đực' : 'Cái'}</option>)}
               </select>
             </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <ToggleField label="Vaccination Status (Up to Date)" checked={booking.extra.vaccinationUpToDate} onChange={(v) => updateExtra({ vaccinationUpToDate: v })} />
-            <Field label="Medical Conditions" value={booking.extra.medicalConditions} onChange={(v) => updateExtra({ medicalConditions: v })} placeholder="None" hint="Chưa có cột riêng — gộp vào pet.special_notes." />
+            <ToggleField label="Trạng thái tiêm vắc-xin (Đã tiêm đầy đủ)" checked={booking.extra.vaccinationUpToDate} onChange={(v) => updateExtra({ vaccinationUpToDate: v })} />
+            <Field label="Tình trạng sức khỏe/Bệnh lý" value={booking.extra.medicalConditions} onChange={(v) => updateExtra({ medicalConditions: v })} placeholder="Không có" hint="Chưa có cột riêng — gộp vào pet.special_notes." />
           </div>
-          <Field label="Allergies" value={booking.pet.allergyNotes} onChange={(v) => updatePet({ allergyNotes: v })} placeholder="Grain sensitivity, Beef" />
+          <Field label="Dị ứng" value={booking.pet.allergyNotes} onChange={(v) => updatePet({ allergyNotes: v })} placeholder="Dị ứng ngũ cốc, thịt bò..." />
         </Card>
 
-        <Card title="😊 Behavioral & Care">
-          <TextAreaField label="Behavioral Notes" value={booking.pet.behaviorNotes} onChange={(v) => updatePet({ behaviorNotes: v })} placeholder="Friendly with dogs, shy around loud noises..." />
+        <Card title="😊 Hành vi & Chăm sóc">
+          <TextAreaField label="Lưu ý về hành vi" value={booking.pet.behaviorNotes} onChange={(v) => updatePet({ behaviorNotes: v })} placeholder="Thân thiện với chó khác, nhút nhát khi có tiếng động lớn..." />
           <div className="grid sm:grid-cols-2 gap-4">
-            <ToggleField label="Bring Own Food" checked={booking.extra.bringOwnFood} onChange={(v) => updateExtra({ bringOwnFood: v })} />
-            <Field label="Feeding Schedule" value={booking.extra.feedingSchedule} onChange={(v) => updateExtra({ feedingSchedule: v })} placeholder="8:00 AM, 6:00 PM" />
+            <ToggleField label="Tự mang thức ăn riêng" checked={booking.extra.bringOwnFood} onChange={(v) => updateExtra({ bringOwnFood: v })} />
+            <Field label="Lịch trình ăn uống" value={booking.extra.feedingSchedule} onChange={(v) => updateExtra({ feedingSchedule: v })} placeholder="8:00 sáng, 6:00 tối" />
           </div>
-          <MultiChoice label="Personal Belongings" options={['Blanket', 'Toys', 'Bed']} selected={booking.extra.personalBelongings} onChange={(v) => updateExtra({ personalBelongings: v })} />
+          <MultiChoice label="Vật dụng cá nhân mang theo" options={['Chăn/Mền', 'Đồ chơi', 'Nệm nằm']} selected={booking.extra.personalBelongings} onChange={(v) => updateExtra({ personalBelongings: v })} />
         </Card>
 
-        <Card title="⭐ Stay Preferences">
+        <Card title="⭐ Sở thích lưu trú">
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Walking Preferences" value={booking.extra.walkingPreference} onChange={(v) => updateExtra({ walkingPreference: v })} placeholder="Social Pack Walk" />
-            <Field label="Medication Schedule" value={booking.extra.medicationSchedule} onChange={(v) => updateExtra({ medicationSchedule: v })} placeholder="e.g. 1 pill after dinner" />
+            <Field label="Sở thích đi dạo" value={booking.extra.walkingPreference} onChange={(v) => updateExtra({ walkingPreference: v })} placeholder="Đi dạo cùng đàn" />
+            <Field label="Lịch trình uống thuốc" value={booking.extra.medicationSchedule} onChange={(v) => updateExtra({ medicationSchedule: v })} placeholder="Ví dụ: 1 viên sau ăn tối" />
           </div>
           <div className="grid sm:grid-cols-3 gap-3">
-            <ToggleField label="Grooming (spa)" checked={booking.extra.addonGrooming} onChange={(v) => updateExtra({ addonGrooming: v })} />
-            <ToggleField label="Daily Photos" checked={booking.extra.addonDailyPhotos} onChange={(v) => updateExtra({ addonDailyPhotos: v })} />
-            <ToggleField label="Webcam" checked={booking.extra.addonWebcam} onChange={(v) => updateExtra({ addonWebcam: v })} />
+            <ToggleField label="Dịch vụ Grooming kèm theo" checked={booking.extra.addonGrooming} onChange={(v) => updateExtra({ addonGrooming: v })} />
+            <ToggleField label="Gửi ảnh hàng ngày" checked={booking.extra.addonDailyPhotos} onChange={(v) => updateExtra({ addonDailyPhotos: v })} />
+            <ToggleField label="Xem webcam trực tiếp" checked={booking.extra.addonWebcam} onChange={(v) => updateExtra({ addonWebcam: v })} />
           </div>
         </Card>
 
-        <Card title="✳️ Emergency Contact">
+        <Card title="✳️ Liên hệ khẩn cấp">
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Emergency Name" value={booking.extra.emergencyName} onChange={(v) => updateExtra({ emergencyName: v })} />
-            <Field label="Relationship" value={booking.extra.emergencyRelationship} onChange={(v) => updateExtra({ emergencyRelationship: v })} />
+            <Field label="Tên người liên hệ" value={booking.extra.emergencyName} onChange={(v) => updateExtra({ emergencyName: v })} />
+            <Field label="Mối quan hệ" value={booking.extra.emergencyRelationship} onChange={(v) => updateExtra({ emergencyRelationship: v })} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Phone" value={booking.extra.emergencyPhone} onChange={(v) => updateExtra({ emergencyPhone: v })} />
-            <Field label="Alternate Phone" value={booking.extra.emergencyAltPhone} onChange={(v) => updateExtra({ emergencyAltPhone: v })} />
+            <Field label="Số điện thoại" value={booking.extra.emergencyPhone} onChange={(v) => updateExtra({ emergencyPhone: v })} />
+            <Field label="Số điện thoại phụ" value={booking.extra.emergencyAltPhone} onChange={(v) => updateExtra({ emergencyAltPhone: v })} />
           </div>
         </Card>
 
-        <Card title="📝 Special Requests & Vet Info">
-          <TextAreaField label="Additional Notes" value={booking.pet.specialNotes} onChange={(v) => updatePet({ specialNotes: v })} placeholder="Thông tin bác sĩ thú y và các yêu cầu đặc biệt khác..." />
+        <Card title="📝 Yêu cầu đặc biệt & Bác sĩ thú y">
+          <TextAreaField label="Ghi chú thêm" value={booking.pet.specialNotes} onChange={(v) => updatePet({ specialNotes: v })} placeholder="Thông tin bác sĩ thú y và các yêu cầu đặc biệt khác..." />
         </Card>
 
         <button onClick={onBack} className="self-start text-sm font-semibold text-wood-bark/70 hover:text-understory">
-          ← Back to Room Selection
+          ← Quay lại chọn phòng
         </button>
       </div>
 
@@ -148,18 +148,18 @@ export default function Step2_GuestDetails({ booking, setBooking, onNext, onBack
           </div>
         ) : (
           <BookingSummaryCard
-            packageInfo={room ? { name: `Room ${room.room_id}`, description: `${nights} đêm` } : null}
+            packageInfo={room ? { name: `Phòng ${room.room_id}`, description: `${nights} đêm` } : null}
             petLabel={booking.pet.name}
             dateLabel={`${booking.checkIn} → ${booking.checkOut} (${nights} đêm)`}
             breakdown={[
-              { label: 'Nightly Rate', amount: room?.price_per_night || 0 },
-              { label: `Subtotal (${nights} đêm)`, amount: subtotal },
-              { label: 'Taxes & Fees', amount: tax },
+              { label: 'Giá mỗi đêm', amount: room?.price_per_night || 0 },
+              { label: `Tạm tính (${nights} đêm)`, amount: subtotal },
+              { label: 'Thuế & Phí', amount: tax },
             ]}
             total={total}
             deposit={deposit}
             note={requiresDeposit(total) ? 'Đơn có giá trị ≥ 1.000.000đ nên cần đặt cọc 30% để giữ phòng.' : 'Đơn dưới 1.000.000đ nên không cần đặt cọc.'}
-            ctaLabel="Continue to Payment →"
+            ctaLabel="Tiếp tục thanh toán →"
             onCtaClick={handleContinue}
             lock={lock}
           />

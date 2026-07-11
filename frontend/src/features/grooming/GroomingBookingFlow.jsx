@@ -13,6 +13,7 @@ const INITIAL_BOOKING = {
   species: 'dog', // pet.species
   sizeId: '', // pet.size
   serviceId: '', // service.service_id
+  serviceIds: [], // array of selected service_ids
   date: '',
   time: '',
   groomer: null, // staff (role='groomer') được hệ thống tự gán cho slot

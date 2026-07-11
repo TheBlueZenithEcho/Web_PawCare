@@ -184,7 +184,7 @@ function PetCard({ pet, upcoming }) {
       </div>
 
       <a
-        href={`/customer/profile/thu-cung/${pet.pet_id}`}
+        href={`/customer/profile/thu_cung/${pet.pet_id}`}
         className="self-start rounded-full border border-wood-bark/20 px-5 py-2 text-sm font-semibold text-wood-bark hover:border-understory hover:text-understory transition-colors text-center"
       >
         View Details

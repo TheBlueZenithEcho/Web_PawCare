@@ -82,7 +82,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
         needsDeposit={needsDeposit}
         method={booking.paymentMethod}
         petName={booking.pet.name}
-        roomName={room ? `Room ${room.room_id}` : ''}
+        roomName={room ? `Phòng ${room.room_id}` : ''}
         nights={nights}
       />
     );
@@ -91,7 +91,7 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 flex flex-col gap-6">
-        <h2 className="text-3xl font-bold text-wood-bark">Payment</h2>
+        <h2 className="text-3xl font-bold text-wood-bark">Thanh toán</h2>
 
         {submitError && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-2xl px-4 py-3 flex items-center gap-2">
@@ -148,19 +148,19 @@ export default function Step3_Payment({ booking, setBooking, onBack, onConfirmed
         )}
 
         <button onClick={onBack} className="self-start text-sm font-semibold text-wood-bark/70 hover:text-understory">
-          ← Back to Guest Details
+          ← Quay lại điền thông tin
         </button>
       </div>
 
       <div className="w-full lg:w-[360px]">
         <BookingSummaryCard
-          packageInfo={room ? { name: `Room ${room.room_id}`, description: `${nights} đêm lưu trú` } : null}
+          packageInfo={room ? { name: `Phòng ${room.room_id}`, description: `${nights} đêm lưu trú` } : null}
           petLabel={booking.pet.name}
           dateLabel={`${booking.checkIn} → ${booking.checkOut}`}
           breakdown={[
-            { label: 'Nightly Rate', amount: room?.price_per_night || 0 },
-            { label: `Subtotal (${nights} đêm)`, amount: subtotal },
-            { label: 'Taxes & Fees', amount: tax },
+            { label: 'Giá mỗi đêm', amount: room?.price_per_night || 0 },
+            { label: `Tạm tính (${nights} đêm)`, amount: subtotal },
+            { label: 'Thuế & Phí', amount: tax },
           ]}
           total={total}
           deposit={needsDeposit ? depositAmount : 0}
@@ -191,7 +191,7 @@ function SuccessScreen({ orderId, total, amountDue, needsDeposit, method, petNam
         <Row label={needsDeposit ? 'Đã đặt cọc' : 'Trạng thái'} value={needsDeposit ? formatVND(amountDue) : 'Đã xác nhận'} />
         {needsDeposit && <Row label="Phương thức" value={method === 'bank_transfer' ? 'Chuyển khoản' : method === 'momo' ? 'MoMo' : 'VNPay'} />}
       </div>
-      <a href="/dich-vu-luu-tru" className="mt-4 rounded-full bg-understory px-8 py-3 text-sm font-bold text-white hover:bg-wood-bark transition-colors">
+      <a href="/customer/booking/dich_vu_luu_tru" className="mt-4 rounded-full bg-understory px-8 py-3 text-sm font-bold text-white hover:bg-wood-bark transition-colors">
         Về trang Dịch vụ lưu trú
       </a>
     </div>

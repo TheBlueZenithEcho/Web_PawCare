@@ -146,15 +146,22 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Submit button (Styled exactly like Figma screenshot button) */}
-            <div className="pt-4 text-center md:text-left">
+            {/* Register & Login buttons */}
+            <div className="pt-4 flex flex-col sm:flex-row gap-4 items-center justify-center md:justify-start">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full md:w-auto inline-flex items-center justify-center rounded-full bg-[#1B693C] px-12 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-moss-green transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#1B693C] px-12 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-moss-green transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
               >
                 {loading ? 'Đang đăng ký...' : 'Đăng ký'}
               </button>
+              
+              <Link
+                href="/login"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-[#A2B447] px-12 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-[#556F30] transition-all hover:scale-105 active:scale-95"
+              >
+                Đăng nhập
+              </Link>
             </div>
           </form>
         </div>
@@ -162,10 +169,10 @@ export default function RegisterPage() {
         {/* Footer pet preview images */}
         <div className="flex gap-4 justify-center md:justify-start pt-8 border-t border-wood-bark/10">
           <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md bg-white p-1 border border-white/50 hover:scale-105 transition-transform duration-200">
-            <img src="/images/pet-hat.png" alt="Pet Hat" className="w-full h-full object-cover rounded-xl" />
+            <img src="/images/pet_hat.png" alt="Pet Hat" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md bg-white p-1 border border-white/50 hover:scale-105 transition-transform duration-200">
-            <img src="/images/cat-hood.png" alt="Cat Hood" className="w-full h-full object-cover rounded-xl" />
+            <img src="/images/cat_hood.png" alt="Cat Hood" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md bg-white p-1 border border-white/50 hover:scale-105 transition-transform duration-200">
             <img src="/images/paws.png" alt="Paws" className="w-full h-full object-cover rounded-xl" />
@@ -176,19 +183,11 @@ export default function RegisterPage() {
 
       {/* Right Column: Hero Dog Photo */}
       <div className="w-full md:w-1/2 min-h-[450px] md:min-h-screen p-4 md:p-8 flex relative shrink-0">
-        
-        {/* Floating Login Button */}
-        <Link
-          href="/login"
-          className="absolute top-8 right-12 z-20 inline-flex items-center justify-center rounded-full bg-[#A2B447] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#556F30] transition-all hover:scale-105 active:scale-95"
-        >
-          Đăng nhập
-        </Link>
 
         {/* Curved Container with Background Image */}
         <div className="w-full h-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative select-none">
           <img 
-            src="/images/login-dog.png" 
+            src="/images/login_dog.png" 
             alt="Dog running with green ball" 
             className="absolute inset-0 w-full h-full object-cover object-center scale-[1.02] hover:scale-100 transition-transform duration-700" 
           />

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
+import { useCart } from '@/context/CartContext';
 
 // Custom Paw icon matching the brand identity
 const PawIcon = ({ className = "w-6 h-6" }) => (
@@ -22,12 +23,14 @@ const PawIcon = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
-export default function Header({ activePath, cartCount = 0 }) {
+export default function Header({ activePath, cartCount }) {
   const router = useRouter();
   const currentPath = activePath || router.pathname;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState(null);
+  const { cartItems } = useCart();
+  const totalCartCount = cartCount !== undefined ? cartCount : (cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('customer_user');
@@ -46,21 +49,21 @@ export default function Header({ activePath, cartCount = 0 }) {
   const handleLogout = () => {
     localStorage.removeItem('customer_user');
     setUser(null);
-    router.push('/login');
+    router.push('/');
   };
 
   const navLinks = [
     { name: 'Trang chủ', path: '/' },
-    { name: 'Giới thiệu', path: '/gioi-thieu' },
-    { name: 'Sản phẩm', path: '/san-pham' },
-    { name: 'Dịch vụ chăm sóc', path: '/customer/booking/dich-vu-cham-soc' },
-    { name: 'Dịch vụ lưu trú', path: '/customer/booking/dich-vu-luu-tru' }
+    { name: 'Giới thiệu', path: '/gioi_thieu' },
+    { name: 'Sản phẩm', path: '/san_pham' },
+    { name: 'Dịch vụ chăm sóc', path: '/customer/booking/dich_vu_cham_soc' },
+    { name: 'Dịch vụ lưu trú', path: '/customer/booking/dich_vu_luu_tru' }
   ];
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/san-pham?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/san_pham?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -123,7 +126,7 @@ export default function Header({ activePath, cartCount = 0 }) {
             >
               <ShoppingBag size={20} />
               <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-wood-bark/80 text-[10px] font-bold text-white">
-                {cartCount}
+                {totalCartCount}
               </span>
             </Link>
 
@@ -132,7 +135,7 @@ export default function Header({ activePath, cartCount = 0 }) {
               <div className="flex items-center gap-3">
                 {/* ĐÃ SỬA: Thay text bằng Avatar có bọc Link */}
                 <Link 
-                  href="/customer/profile/tai-khoan"
+                  href="/customer/profile/tai_khoan"
                   className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-white shadow-sm flex items-center justify-center bg-azeitona text-white font-bold text-sm hover:ring-2 hover:ring-understory transition-all"
                   title="Tài khoản của tôi"
                 >
@@ -153,7 +156,7 @@ export default function Header({ activePath, cartCount = 0 }) {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-full bg-azeitona px-5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-fig-leaf transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-azeitona px-5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-fig-leaf transition-all hover:scale-105 active:scale-95"
               >
                 Đăng nhập
               </Link>
@@ -168,7 +171,7 @@ export default function Header({ activePath, cartCount = 0 }) {
             >
               <ShoppingBag size={20} />
               <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-wood-bark/80 text-[10px] font-bold text-white">
-                {cartCount}
+                {totalCartCount}
               </span>
             </Link>
 
@@ -227,7 +230,7 @@ export default function Header({ activePath, cartCount = 0 }) {
               <div className="flex flex-col gap-3">
                 {/* ĐÃ SỬA: Layout Profile cho Mobile */}
                 <Link 
-                  href="/customer/profile/tai-khoan"
+                  href="/customer/profile/tai_khoan"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/40 hover:bg-white/60 transition-colors"
                 >

@@ -1,7 +1,7 @@
 const STEPS = [
-  { id: 1, label: 'Service' },
-  { id: 2, label: 'Details' },
-  { id: 3, label: 'Payment' },
+  { id: 1, label: 'Dịch vụ' },
+  { id: 2, label: 'Chi tiết' },
+  { id: 3, label: 'Thanh toán' },
 ];
 
 export default function BookingStepper({ currentStep }) {

@@ -245,6 +245,20 @@ export const createRealBooking = async ({ customerData, petData, bookingDetails,
 
     // 1. Tạo Khách hàng mới (nếu chưa có)
     if (!finalCustomerId) {
+      if (customerData.phone) {
+        const { data: existing, error: checkError } = await supabase
+          .from('customer')
+          .select('customer_id')
+          .eq('phone', customerData.phone)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+
+        if (existing) {
+          throw new Error("Số điện thoại này đã được đăng ký trước đó, vui lòng kiểm tra lại");
+        }
+      }
+
       const { data: lastCustomer, error: idError } = await supabase
         .from('customer')
         .select('customer_id')

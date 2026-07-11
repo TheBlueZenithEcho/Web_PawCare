@@ -211,7 +211,7 @@ export default function CartPage() {
           <nav className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-8">
             <Link href="/" className="hover:text-understory transition-colors">Trang chủ</Link>
             <ChevronRightIcon />
-            <Link href="/san-pham" className="hover:text-understory transition-colors">Cửa hàng</Link>
+            <Link href="/san_pham" className="hover:text-understory transition-colors">Cửa hàng</Link>
             <ChevronRightIcon />
             <span className="text-[#362F22] font-bold">Giỏ hàng</span>
           </nav>
@@ -241,7 +241,7 @@ export default function CartPage() {
                 Hãy ghé cửa hàng để tìm mua các sản phẩm dinh dưỡng, phụ kiện sành điệu cho bé cưng của bạn.
               </p>
               <Link 
-                href="/san-pham"
+                href="/san_pham"
                 className="px-6 py-3 bg-[#1B693C] text-white font-bold text-sm rounded-full hover:bg-moss-green transition-all shadow-md shadow-understory/10"
               >
                 Tiếp tục mua sắm
@@ -519,7 +519,7 @@ export default function CartPage() {
                       onClick={() => {
                         setShowCheckoutModal(false);
                         setCheckoutSuccess(false);
-                        router.push('/san-pham');
+                        router.push('/san_pham');
                       }}
                       className="px-6 py-3 bg-understory text-white font-bold text-sm rounded-full hover:bg-moss-green transition-all shadow-md shadow-understory/10 cursor-pointer"
                     >

@@ -42,36 +42,49 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
       .finally(() => setLoadingServices(false));
   }, []);
 
-  const durationRule = booking.serviceId && booking.species && booking.sizeId
-    ? rules[`${booking.serviceId}_${booking.species}_${booking.sizeId}`]
-    : null;
+  const selectedRules = useMemo(() => {
+    const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
+    if (ids.length === 0 || !booking.species || !booking.sizeId) return [];
+    return ids
+      .map(id => rules[`${id}_${booking.species}_${booking.sizeId}`])
+      .filter(Boolean);
+  }, [booking.serviceId, booking.serviceIds, booking.species, booking.sizeId, rules]);
+
+  const totalDurationMinutes = useMemo(() => {
+    return selectedRules.reduce((sum, r) => sum + (r.estimated_minutes || 60), 0);
+  }, [selectedRules]);
 
   // Load duration rule mỗi khi service/species/size thay đổi
   useEffect(() => {
-    if (!booking.serviceId || !booking.species || !booking.sizeId) return;
-    const key = `${booking.serviceId}_${booking.species}_${booking.sizeId}`;
-    if (rules[key] !== undefined) return;
-    getDurationRule(booking.serviceId, booking.species, booking.sizeId)
-      .then((rule) => setRules((prev) => ({ ...prev, [key]: rule || null })))
-      .catch((e) => console.error(e));
-  }, [booking.serviceId, booking.species, booking.sizeId]); // eslint-disable-line react-hooks/exhaustive-deps
+    const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
+    if (ids.length === 0 || !booking.species || !booking.sizeId) return;
+
+    ids.forEach(id => {
+      const key = `${id}_${booking.species}_${booking.sizeId}`;
+      if (rules[key] !== undefined) return;
+      getDurationRule(id, booking.species, booking.sizeId)
+        .then((rule) => setRules((prev) => ({ ...prev, [key]: rule || null })))
+        .catch((e) => console.error(e));
+    });
+  }, [booking.serviceId, booking.serviceIds, booking.species, booking.sizeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load slot trống mỗi khi đổi ngày (cần biết duration để check overlap chính xác)
   useEffect(() => {
     setLoadingSlots(true);
-    getAvailableTimeSlots(selectedDayKey, durationRule?.estimated_minutes || 60)
+    getAvailableTimeSlots(selectedDayKey, totalDurationMinutes || 60)
       .then(setTimeSlots)
       .catch((e) => {
         console.error(e);
         setError('Không tải được lịch trống. Thử lại sau.');
       })
       .finally(() => setLoadingSlots(false));
-  }, [selectedDayKey, durationRule?.estimated_minutes]);
+  }, [selectedDayKey, totalDurationMinutes]);
 
   const selectedDay = days.find((d) => d.key === selectedDayKey);
-  const total = durationRule ? durationRule.base_price : 0;
+  const total = selectedRules.reduce((sum, r) => sum + (r.base_price || 0), 0);
+  const ids = booking.serviceIds && booking.serviceIds.length > 0 ? booking.serviceIds : [booking.serviceId].filter(Boolean);
   const canContinue = Boolean(
-    booking.species && booking.sizeId && booking.serviceId && durationRule &&
+    booking.species && booking.sizeId && ids.length > 0 && selectedRules.length === ids.length &&
       booking.date && booking.time && booking.pet.name.trim()
   );
 
@@ -99,7 +112,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
         {/* 1. Pet Information */}
         <section>
           <div className="flex items-center justify-between flex-wrap gap-4 mb-5">
-            <h2 className="text-2xl font-bold text-wood-bark">1. Pet Information</h2>
+            <h2 className="text-2xl font-bold text-wood-bark">1. Thông tin thú cưng</h2>
             <div className="inline-flex rounded-full bg-white shadow-sm p-1">
               {SPECIES.map((s) => (
                 <button
@@ -117,7 +130,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-semibold text-wood-bark/80 mb-2 block">Pet Name</label>
+              <label className="text-sm font-semibold text-wood-bark/80 mb-2 block">Tên thú cưng</label>
               <input
                 type="text"
                 value={booking.pet.name}
@@ -128,7 +141,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
             </div>
             <div>
               <label className="text-sm font-semibold text-wood-bark/80 mb-2 block">
-                Breed <span className="text-wood-bark/40 font-normal">(tùy chọn)</span>
+                Giống loài <span className="text-wood-bark/40 font-normal">(tùy chọn)</span>
               </label>
               <input
                 type="text"
@@ -141,7 +154,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
           </div>
 
           <div className="mt-6">
-            <label className="text-sm font-semibold text-wood-bark/80 mb-3 block">Select Pet Size</label>
+            <label className="text-sm font-semibold text-wood-bark/80 mb-3 block">Chọn kích thước thú cưng</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {PET_SIZES.map((size) => {
                 const isSelected = booking.sizeId === size.id;
@@ -165,7 +178,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
 
         {/* 2. Select Grooming Service */}
         <section>
-          <h2 className="text-2xl font-bold text-wood-bark mb-2">2. Select Grooming Service</h2>
+          <h2 className="text-2xl font-bold text-wood-bark mb-2">2. Chọn dịch vụ Grooming</h2>
           {loadingServices ? (
             <p className="text-sm text-wood-bark/50 flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" /> Đang tải dịch vụ...
@@ -173,13 +186,26 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
           ) : (
             <div className="grid sm:grid-cols-3 gap-5">
               {services.map((service) => {
-                const isSelected = booking.serviceId === service.service_id;
+                const currentIds = booking.serviceIds || [];
+                const isSelected = currentIds.includes(service.service_id) || booking.serviceId === service.service_id;
                 const key = `${service.service_id}_${booking.species}_${booking.sizeId}`;
                 const rule = rules[key];
                 return (
                   <button
                     key={service.service_id}
-                    onClick={() => update({ serviceId: service.service_id })}
+                    onClick={() => {
+                      let nextIds = [];
+                      if (currentIds.includes(service.service_id)) {
+                        nextIds = currentIds.filter(id => id !== service.service_id);
+                      } else {
+                        nextIds = [...currentIds, service.service_id];
+                      }
+                      update({ 
+                        serviceIds: nextIds,
+                        // Update serviceId to the first selected for backward compatibility
+                        serviceId: nextIds[0] || ''
+                      });
+                    }}
                     className={`text-left rounded-3xl overflow-hidden shadow-sm transition-all ${
                       isSelected ? 'ring-2 ring-fresh-grown shadow-lg' : 'hover:shadow-md'
                     }`}
@@ -216,7 +242,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
 
       <div className="w-full lg:w-[360px] flex flex-col gap-6">
         <div className="bg-white rounded-3xl shadow-sm p-5">
-          <h3 className="font-bold text-wood-bark mb-4">📅 Available Slots</h3>
+          <h3 className="font-bold text-wood-bark mb-4">📅 Khung ngày trống</h3>
           <div className="grid grid-cols-7 gap-1 text-center">
             {days.map((d) => {
               const isSelected = d.key === selectedDayKey;
@@ -233,7 +259,7 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm p-5">
-          <h3 className="font-bold text-wood-bark mb-4">🕐 Select Time</h3>
+          <h3 className="font-bold text-wood-bark mb-4">🕐 Chọn khung giờ</h3>
           {loadingSlots ? (
             <p className="text-sm text-wood-bark/50 flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" /> Đang kiểm tra lịch trống...
@@ -266,15 +292,19 @@ export default function Step1_ServiceSelection({ booking, setBooking, onNext, lo
 
         <BookingSummaryCard
           packageInfo={(() => {
-            const s = services.find((sv) => sv.service_id === booking.serviceId);
-            return s ? { name: s.service_name, description: s.description } : null;
+            const selectedServices = services.filter((sv) => ids.includes(sv.service_id));
+            if (selectedServices.length === 0) return null;
+            return {
+              name: selectedServices.map(s => s.service_name).join(' + '),
+              description: selectedServices.map(s => s.description).join('; ')
+            };
           })()}
           petLabel={booking.pet.name ? `${booking.pet.name} (${booking.sizeId || '—'})` : ''}
           dateLabel={selectedDay ? selectedDay.full.toLocaleDateString('vi-VN') : undefined}
           timeLabel={booking.time || undefined}
-          durationLabel={durationRule ? formatDuration(durationRule.estimated_minutes) : undefined}
+          durationLabel={totalDurationMinutes ? formatDuration(totalDurationMinutes) : undefined}
           total={total}
-          ctaLabel="Continue to Info →"
+          ctaLabel="Tiếp tục điền thông tin →"
           ctaDisabled={!canContinue}
           onCtaClick={onNext}
           lock={booking.time ? lock : null}

@@ -20,7 +20,7 @@ export default function BookingSummaryCard({
 }) {
   return (
     <aside className="w-full max-w-sm rounded-3xl bg-white shadow-lg p-6 flex flex-col gap-5 sticky top-24 h-fit">
-      <h3 className="text-lg font-bold text-wood-bark">Booking Summary</h3>
+      <h3 className="text-lg font-bold text-wood-bark">Tóm tắt lịch đặt</h3>
 
       {lock && !lock.expired && (
         <SlotLockBanner formatted={lock.formatted} isCritical={lock.isCritical} />
@@ -70,7 +70,7 @@ export default function BookingSummaryCard({
 
       <div className="border-t border-wood-bark/10 pt-4 flex flex-col gap-1">
         <div className="flex justify-between items-baseline">
-          <span className="font-bold text-wood-bark">Total Estimate</span>
+          <span className="font-bold text-wood-bark">Tổng tạm tính</span>
           <span className="text-xl font-bold text-understory">{formatVND(total)}</span>
         </div>
         {deposit > 0 && (

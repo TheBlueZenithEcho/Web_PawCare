@@ -34,7 +34,7 @@ export default function ProductDetailsPage() {
       } catch (err) {
         console.error(err);
         toast.error('Không tìm thấy sản phẩm');
-        router.push('/san-pham');
+        router.push('/san_pham');
       } finally {
         setLoading(false);
       }
@@ -91,7 +91,7 @@ export default function ProductDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col justify-between font-sans">
-        <Header activePath="/san-pham" />
+        <Header activePath="/san_pham" />
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 flex justify-center items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B693C]"></div>
         </main>
@@ -108,14 +108,14 @@ export default function ProductDetailsPage() {
         <title>{product.name} | PawCare</title>
       </Head>
       
-      <Header activePath="/san-pham" />
+      <Header activePath="/san_pham" />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-8">
           <Link href="/" className="hover:text-understory transition-colors">Trang chủ</Link>
           <ChevronRightIcon />
-          <Link href="/san-pham" className="hover:text-understory transition-colors">Cửa hàng</Link>
+          <Link href="/san_pham" className="hover:text-understory transition-colors">Cửa hàng</Link>
           <ChevronRightIcon />
           <span className="text-wood-bark">{product.category}</span>
           <ChevronRightIcon />

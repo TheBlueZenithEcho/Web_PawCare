@@ -50,7 +50,7 @@ export default function Footer() {
   const companyLinks = [
     { name: 'Về chúng tôi', path: '/ve-chung-toi' },
     { name: 'Sứ mệnh', path: '/su-menh' },
-    { name: 'Liên hệ', path: '/lien-he' },
+    { name: 'Liên hệ', path: '/lien_he' },
     { name: 'Tuyển dụng', path: '/tuyen-dung' }
   ];
 
@@ -69,9 +69,9 @@ export default function Footer() {
   ];
 
   const shopLinks = [
-    { name: 'Tất cả sản phẩm', path: '/san-pham' },
-    { name: 'Hàng mới về', path: '/san-pham?sort=new' },
-    { name: 'Bán chạy nhất', path: '/san-pham?sort=best' },
+    { name: 'Tất cả sản phẩm', path: '/san_pham' },
+    { name: 'Hàng mới về', path: '/san_pham?sort=new' },
+    { name: 'Bán chạy nhất', path: '/san_pham?sort=best' },
     { name: 'Thẻ quà tặng', path: '/the-qua-tang' }
   ];
 

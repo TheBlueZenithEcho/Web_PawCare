@@ -189,7 +189,7 @@ export default function BookingHistoryPage() {
                       )}
 
                       <a
-                        href={b.booking_type === 'grooming' ? '/customer/booking/dich-vu-cham-soc' : '/customer/booking/dich-vu-luu-tru'}
+                        href={b.booking_type === 'grooming' ? '/customer/booking/dich_vu_cham_soc' : '/customer/booking/dich_vu_luu_tru'}
                         className="rounded-full bg-understory text-white text-center py-2.5 text-sm font-bold hover:bg-wood-bark transition-colors mt-2"
                       >
                         {status === 'cancelled' ? 'Reschedule' : 'Book Again'}

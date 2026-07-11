@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductSidebar from '@/components/layout/ProductSidebar';
 import { fetchProducts } from '@/services/supabase/supabaseShopApi';
 import { Search, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCart } from '@/context/CartContext';
 
 export default function ShopPage() {
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cartCount, setCartCount] = useState(0);
+  const { addToCart } = useCart();
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,9 +78,19 @@ export default function ShopPage() {
   };
 
   // Add product to cart logic
-  const handleAddToCart = (productName) => {
-    setCartCount(prev => prev + 1);
-    toast.success(`Đã thêm "${productName}" vào giỏ hàng!`);
+  const handleAddToCart = (product) => {
+    addToCart(product);
+  };
+
+  // Buy now logic - adds to cart and redirects directly to checkout
+  const handleBuyNow = async (product) => {
+    const targetVariantId = product.full_variants?.[0]?.variant_id;
+    if (!targetVariantId) {
+      toast.error('Sản phẩm không có phân loại hợp lệ');
+      return;
+    }
+    await addToCart(product);
+    router.push(`/customer/shop/checkout?ids=${targetVariantId}`);
   };
 
   // Pagination calculation
@@ -94,7 +107,7 @@ export default function ShopPage() {
     <div className="min-h-screen bg-white flex flex-col justify-between font-sans">
       <div>
         {/* Header layout component */}
-        <Header activePath="/san-pham" cartCount={cartCount} />
+        <Header activePath="/san_pham" />
 
         {/* Main Grid Shop Container */}
         <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-10">
@@ -202,7 +215,7 @@ export default function ShopPage() {
                             <div className="flex gap-2">
                               {/* Cart icon button */}
                               <button 
-                                onClick={() => handleAddToCart(p.name)}
+                                onClick={() => handleAddToCart(p)}
                                 className="p-2 rounded-xl bg-azeitona/10 text-azeitona hover:bg-azeitona hover:text-white transition-all duration-200"
                                 aria-label="Thêm vào giỏ hàng"
                               >
@@ -211,7 +224,7 @@ export default function ShopPage() {
                               
                               {/* Buy button */}
                               <button 
-                                onClick={() => handleAddToCart(p.name)}
+                                onClick={() => handleBuyNow(p)}
                                 className="flex-1 py-2 px-3 rounded-xl bg-[#1B693C] text-white font-bold text-xs hover:bg-moss-green transition-all"
                               >
                                 Mua hàng
