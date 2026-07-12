@@ -7,7 +7,7 @@ export default function OrdersList() {
   const [allOrders, setAllOrders] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('ALL');
+  const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Modals state
@@ -25,20 +25,22 @@ export default function OrdersList() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const TABS = [
-    { id: 'ALL', label: 'TẤT CẢ' },
-    { id: 'PENDING_PAYMENT', label: 'CHỜ THANH TOÁN' },
-    { id: 'PAID', label: 'ĐÃ THANH TOÁN' },
-    { id: 'PENDING_VERIFICATION', label: 'CHỜ XÁC MINH' },
-    { id: 'CONFIRMED', label: 'ĐÃ XÁC NHẬN' },
-    { id: 'COMPLETED', label: 'HOÀN TẤT' },
-    { id: 'CANCELLED', label: 'ĐÃ HỦY' }
+    { id: 'all', label: 'TẤT CẢ' },
+    { id: 'pending_payment', label: 'CHỜ THANH TOÁN' },
+    { id: 'pending_verification', label: 'CHỜ XÁC MINH' },
+    { id: 'confirmed', label: 'ĐÃ XÁC NHẬN' },
+    { id: 'preparing', label: 'ĐANG CHUẨN BỊ' },
+    { id: 'shipping', label: 'ĐANG GIAO' },
+    { id: 'completed', label: 'HOÀN TẤT' },
+    { id: 'cancelled', label: 'ĐÃ HỦY' },
+    { id: 'delivery_failed', label: 'GIAO THẤT BẠI' }
   ];
 
   const loadOrders = async () => {
     setIsLoading(true);
     try {
       // Fetch all orders
-      const data = await fetchOrders({ status: 'ALL' });
+      const data = await fetchOrders({ status: 'all' });
       setAllOrders(data);
     } catch (err) {
       console.error(err);
@@ -53,7 +55,7 @@ export default function OrdersList() {
 
   useEffect(() => {
     let result = [...allOrders];
-    if (activeTab !== 'ALL') {
+    if (activeTab !== 'all') {
       result = result.filter(o => o.status === activeTab);
     }
     if (searchTerm) {
@@ -68,7 +70,7 @@ export default function OrdersList() {
   }, [allOrders, activeTab, searchTerm]);
 
   const getStatusCount = (statusId) => {
-    if (statusId === 'ALL') return allOrders.length;
+    if (statusId === 'all') return allOrders.length;
     return allOrders.filter(o => o.status === statusId).length;
   };
 
@@ -92,7 +94,7 @@ export default function OrdersList() {
   };
 
   const onVerify = () => {
-    handleAction(() => updateOrderStatus(selectedOrder.order_id, 'CONFIRMED'));
+    handleAction(() => updateOrderStatus(selectedOrder.order_id, 'confirmed'));
   };
 
   const onEditShipping = () => {
@@ -102,7 +104,7 @@ export default function OrdersList() {
   };
 
   const onCancel = () => {
-    handleAction(() => updateOrderStatus(selectedOrder.order_id, 'CANCELLED'));
+    handleAction(() => updateOrderStatus(selectedOrder.order_id, 'cancelled'));
   };
 
   const openModal = (order, type) => {
@@ -128,18 +130,18 @@ export default function OrdersList() {
   };
 
   const getStatusBadge = (status) => {
+    const s = status || '';
     const badges = {
-      'PENDING_PAYMENT': <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Chờ thanh toán</span>,
-      'PAID': <span className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Đã thanh toán</span>,
-      'PENDING_VERIFICATION': <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><Phone size={12} /> Chờ xác minh</span>,
-      'CONFIRMED': <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><CheckCircle size={12} /> Đã xác nhận</span>,
-      'PREPARING': <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><Package size={12} /> Đang chuẩn bị</span>,
-      'SHIPPING': <span className="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Đang giao</span>,
-      'COMPLETED': <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Hoàn tất</span>,
-      'CANCELLED': <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Đã hủy</span>,
-      'FAILED_DELIVERY': <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Giao thất bại</span>,
+      'pending_payment': <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Chờ thanh toán</span>,
+      'pending_verification': <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><Phone size={12} /> Chờ xác minh</span>,
+      'confirmed': <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><CheckCircle size={12} /> Đã xác nhận</span>,
+      'preparing': <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap"><Package size={12} /> Đang chuẩn bị</span>,
+      'shipping': <span className="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Đang giao</span>,
+      'completed': <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Hoàn tất</span>,
+      'cancelled': <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Đã hủy</span>,
+      'delivery_failed': <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">Giao thất bại</span>,
     };
-    return badges[status] || <span className="whitespace-nowrap">{status}</span>;
+    return badges[s] || <span className="whitespace-nowrap">{status}</span>;
   };
 
   return (
@@ -192,7 +194,8 @@ export default function OrdersList() {
         ) : (
           <div className="flex flex-col gap-4 min-w-[800px]">
             {orders.map(order => {
-              const isLocked = ['SHIPPING', 'COMPLETED'].includes(order.status);
+              const orderStatus = order.status || '';
+              const isLocked = ['shipping', 'completed', 'cancelled', 'delivery_failed'].includes(orderStatus);
               return (
                 <div key={order.order_id} className="bg-white border border-gray-100 hover:border-chloro/50 transition-colors shadow-sm rounded-xl p-4 flex justify-between items-center group">
                   <div className="flex flex-col gap-2 flex-1">
@@ -221,13 +224,13 @@ export default function OrdersList() {
                     </div>
 
                     <div className="flex gap-2">
-                      {order.status === 'PENDING_VERIFICATION' && (
+                      {orderStatus === 'pending_verification' && (
                         <button onClick={() => openModal(order, 'VERIFY')} className="px-4 py-2 bg-[#1a73e8] hover:bg-blue-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm transition-colors">
                           <Phone size={14} /> Gọi xác minh
                         </button>
                       )}
 
-                      {order.status !== 'PENDING_VERIFICATION' && (
+                      {orderStatus !== 'pending_verification' && (
                         <>
                           <button
                             onClick={() => openModal(order, 'EDIT_SHIPPING')}

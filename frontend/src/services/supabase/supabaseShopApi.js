@@ -96,7 +96,7 @@ export const createOrder = async (orderData) => {
       {
         order_id: order_id,
         customer_id: orderData.customer_id,
-        status: orderData.status || 'COMPLETED',
+        status: orderData.status || 'completed',
         subtotal: orderData.subtotal || orderData.total_amount, 
         total_amount: orderData.total_amount,
         shipping_fee: orderData.shipping_fee || 0,
